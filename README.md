@@ -9,6 +9,32 @@ Shipment tracking system is used for the shipping and the observing of product o
 * Web Application (use AngularJS)
 * OAuth Authentication
 
+## Use Story
+*   Customer
+    * Reciever : ( Android Application )
+        -  <i>Authenticate Not Required</i>
+        ```
+          I can check shipment status using shipment number.
+        ```
+    * Courier : ( Android Application )
+        - <i>Authenticate Required</i>
+        ```
+          I can create shipment
+          I can check all the shipment that I create
+          I can cancel shipment
+        ```
+        - <i>Authenticate Not Required</i>
+        ```
+          I can check shipment status using shipment number.
+          I can check the shipment cost by sending item information
+        ```
+* Delivery Person : ( Web Application ) 
+    -   <i>Authenticate Required</i>
+    ```
+      I can edit shipment status
+    ```
+
+
 ## Use Cases
 ####Use Case Number : 1
 <b>Use Case Name</b> : Reciever and  Courier check shipment status.<br>
