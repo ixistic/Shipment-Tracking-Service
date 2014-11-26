@@ -17,7 +17,7 @@ public class JettyMain {
 	 */
 	static final int PORT = 8080;
 	static Server server;
-	static final String RESOURCE_PACKAGE = "sts.resource";
+	static final String RESOURCE_PACKAGE = "ku.shipment.server.resource";
 
 	/**
 	 * Start Server.

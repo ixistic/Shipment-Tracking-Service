@@ -22,7 +22,7 @@ import ku.shipment.server.service.DaoFactory;
 import ku.shipment.server.service.ShipmentDao;
 
 
-@Path("/products")
+@Path("/shipments")
 @Singleton
 public class ShipmentResource {
 	private ShipmentDao dao;

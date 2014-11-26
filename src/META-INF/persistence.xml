@@ -9,16 +9,16 @@
 		<!-- we are using EclipseLink as the implementation of JPA -->
 		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 		<!-- save objects from these Java classes -->
-		<class>sts.entity.Shipment</class>
+		<class>ku.shipment.server.entity.Shipment</class>
 		<!-- describe the database for JPA -->
 		<properties>
-			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/sts" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:8889/shipment_service" />
 			<property name="javax.persistence.jdbc.user" value="root" />
-			<property name="javax.persistence.jdbc.password" value="" />
+			<property name="javax.persistence.jdbc.password" value="root" />
 			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
 			<!-- this option tells EclipseLink to generate schema. Set to "none" to 
 				skip ddl generation. -->
-			<!-- <property name="eclipselink.ddl-generation" value="create-tables" /> -->
+			<property name="eclipselink.ddl-generation" value="create-tables" /> 
 		</properties>
 	</persistence-unit>
 </persistence>
