@@ -10,6 +10,7 @@
 		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 		<!-- save objects from these Java classes -->
 		<class>ku.shipment.server.entity.Shipment</class>
+		<class>ku.shipment.server.entity.Item</class>
 		<!-- describe the database for JPA -->
 		<properties>
 			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:8889/shipment_service" />

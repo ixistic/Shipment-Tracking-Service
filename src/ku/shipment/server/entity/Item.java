@@ -4,27 +4,56 @@ import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.eclipse.persistence.oxm.annotations.XmlInverseReference;
 
 @Entity
-@Table(name = "shipments")
-@XmlRootElement(name = "shipment")
+@Table(name = "items")
+@XmlRootElement(name = "item")
 @XmlAccessorType(XmlAccessType.FIELD)
+@XmlSeeAlso(Shipment.class)
 public class Item implements Serializable {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 5460610151721574876L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name="id")
 	@XmlAttribute
 	private long id;
-//	@XmlElement(required=true,nillable=false)
+	@Column(name="name")
+	private String name;
+	@Column(name="width")
+    private float width;
+	@Column(name="length")
+    private float length;
+	@Column(name="depth")
+    private float depth;
+	@Column(name="unit")
+    private String unit;
+	@Column(name="weight")
+    private float weight;
+	@Column(name="quantity")
+    private int quantity;
+	@Column(name="cost")
+    private float cost;
+	@ManyToOne 
+	@JoinColumn(name="shipment_id",referencedColumnName = "id") 
+	@XmlInverseReference(mappedBy="item")
+	@XmlTransient
+	private Shipment shipment; 
 
 	public Item() {
 
@@ -42,33 +71,82 @@ public class Item implements Serializable {
 		this.id = id;
 	}
 
-	@Override
-	public String toString() {
-		return String.format("[%ld] %s (%s)", id);
+	public String getName() {
+		return name;
 	}
 
-	/**
-	 * Two contacts are equal if they have the same id, even if other attributes
-	 * differ.
-	 * 
-	 * @param other
-	 *            another contact to compare to this one.
-	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public float getWidth() {
+		return width;
+	}
+
+	public void setWidth(float width) {
+		this.width = width;
+	}
+
+	public float getLength() {
+		return length;
+	}
+
+	public void setLength(float length) {
+		this.length = length;
+	}
+
+	public float getDepth() {
+		return depth;
+	}
+
+	public void setDepth(float depth) {
+		this.depth = depth;
+	}
+
+	public String getUnit() {
+		return unit;
+	}
+
+	public void setUnit(String unit) {
+		this.unit = unit;
+	}
+
+	public float getWeight() {
+		return weight;
+	}
+
+	public void setWeight(float weight) {
+		this.weight = weight;
+	}
+
+	public int getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(int quantity) {
+		this.quantity = quantity;
+	}
+
+	public float getCost() {
+		return cost;
+	}
+
+	public void setCost(float cost) {
+		this.cost = cost;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("[%d]", id);
+	}
+
 	public boolean equals(Object other) {
 		if (other == null || other.getClass() != this.getClass())
 			return false;
-		Shipment product = (Shipment) other;
-		return product.getId() == this.getId();
+		Item item = (Item) other;
+		return item.getId() == this.getId();
 	}
 
-
-	/**
-	 * Test if a string is null or only whitespace.
-	 * 
-	 * @param arg
-	 *            the string to test
-	 * @return true if string variable is null or contains only whitespace
-	 */
 	private static boolean isEmpty(String arg) {
 		return arg == null || arg.matches("\\s*");
 	}
