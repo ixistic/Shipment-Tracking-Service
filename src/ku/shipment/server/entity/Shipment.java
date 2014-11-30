@@ -3,6 +3,7 @@ package ku.shipment.server.entity;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -13,6 +14,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -34,14 +37,18 @@ public class Shipment implements Serializable {
 	private long id;
 	@Column(name="status")
 	private String status;
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="status_created_time")
-	private String status_created_time;
+	private Date status_created_time;
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="status_packed_time")
-	private String status_packed_time;
+	private Date status_packed_time;
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="status_sending_time")
-	private String status_sending_time;
+	private Date status_sending_time;
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="status_recieved_time")
-	private String status_recieved_time;
+	private Date status_recieved_time;
 	@Column(name="type")
 	private String type;
 	@Column(name="courier_name")
@@ -52,6 +59,8 @@ public class Shipment implements Serializable {
 	private String recieve_name;
 	@Column(name="recieve_address")
 	private String recieve_address;
+	@Column(name="total_weight")
+	private float total_weight;
 	@Column(name="total_cost")
 	private float total_cost;
 	
@@ -64,7 +73,7 @@ public class Shipment implements Serializable {
 	}
 
 	public Shipment() {
-
+		
 	}
 
 	public long getId() {
@@ -83,35 +92,35 @@ public class Shipment implements Serializable {
 		this.status = status;
 	}
 
-	public String getStatus_created_time() {
+	public Date getStatus_created_time() {
 		return status_created_time;
 	}
 
-	public void setStatus_created_time(String status_created_time) {
+	public void setStatus_created_time(Date status_created_time) {
 		this.status_created_time = status_created_time;
 	}
 
-	public String getStatus_packed_time() {
+	public Date getStatus_packed_time() {
 		return status_packed_time;
 	}
 
-	public void setStatus_packed_time(String status_packed_time) {
+	public void setStatus_packed_time(Date status_packed_time) {
 		this.status_packed_time = status_packed_time;
 	}
 
-	public String getStatus_sending_time() {
+	public Date getStatus_sending_time() {
 		return status_sending_time;
 	}
 
-	public void setStatus_sending_time(String status_sending_time) {
+	public void setStatus_sending_time(Date status_sending_time) {
 		this.status_sending_time = status_sending_time;
 	}
 
-	public String getStatus_recieved_time() {
+	public Date getStatus_recieved_time() {
 		return status_recieved_time;
 	}
 
-	public void setStatus_recieved_time(String status_recieved_time) {
+	public void setStatus_recieved_time(Date status_recieved_time) {
 		this.status_recieved_time = status_recieved_time;
 	}
 
@@ -162,14 +171,45 @@ public class Shipment implements Serializable {
 	public void setTotal_cost(float total_cost) {
 		this.total_cost = total_cost;
 	}
-
 	
+	public float getTotal_weight() {
+		return total_weight;
+	}
+
+	public void setTotal_weight(float total_weight) {
+		this.total_weight = total_weight;
+	}
+
 	public List<Item> getItems() {
 		return item;
 	}
 
 	public void setItems(List<Item> item) {
 		this.item = item;
+	}
+	
+	public float calTotalWeight(){
+		float total = 0;
+		for(Item single_item : item ){
+			total += single_item.getTotalWeight();
+		}
+		return total;
+	}
+	
+	public float calCostByFreightRates(float weight) {
+		if (getType().equals("EMS")) {
+			return (weight/20 * 8 ) + 20;
+
+		} else {
+			return (weight/20 * 8 ) + 4;
+		}
+	}
+	
+	public void updateStatus(String status) {
+		setStatus(status);
+		if(this.status.equals("created")){
+			setStatus_created_time(new Date());
+		}
 	}
 
 	@Override

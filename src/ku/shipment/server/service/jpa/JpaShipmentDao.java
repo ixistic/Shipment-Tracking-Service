@@ -18,7 +18,7 @@ public class JpaShipmentDao implements ShipmentDao {
 
 	public JpaShipmentDao(EntityManager em) {
 		this.em = em;
-		createTestShipment();
+//		createTestShipment();
 	}
 
 	private void createTestShipment() {
