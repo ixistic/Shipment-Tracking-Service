@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -49,7 +50,7 @@ public class Item implements Serializable {
     private int quantity;
 	@Column(name="cost")
     private float cost;
-	@ManyToOne 
+	@ManyToOne
 	@JoinColumn(name="shipment_id",referencedColumnName = "id") 
 	@XmlInverseReference(mappedBy="item")
 	@XmlTransient

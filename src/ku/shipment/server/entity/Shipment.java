@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -55,7 +56,7 @@ public class Shipment implements Serializable {
 	private float total_cost;
 	
 	@XmlElementWrapper(name = "items")
-	@OneToMany(mappedBy="shipment") 
+	@OneToMany(mappedBy="shipment",cascade = CascadeType.PERSIST) 
 	private List<Item> item;
 	
 	public static long getSerialversionuid() {

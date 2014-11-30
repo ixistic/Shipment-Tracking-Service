@@ -1,11 +1,14 @@
 package ku.shipment.server.resource;
 
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.List;
 
 import javax.inject.Singleton;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -19,6 +22,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
@@ -69,7 +73,7 @@ public class ShipmentResource {
 			if(accept.equals(MediaType.APPLICATION_JSON)){
 				Shipments shipment = new Shipments();
 				shipment.setShipments(dao.findAll());
-				String response = convertXMLtoJSON(mashallXML(shipment));
+				String response = convertXMLtoJSON(mashallXml(shipment));
 				return Response.ok(response,MediaType.APPLICATION_JSON).build();
 			}
 			//xml
@@ -89,9 +93,9 @@ public class ShipmentResource {
 	 */
 	@GET
 	@Path("{id}")
-	@Produces(MediaType.APPLICATION_XML)
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getShipmentById(@PathParam("id") long id,
-			@Context Request request) {
+			@Context Request request,@HeaderParam("Accept") String accept) {
 		Shipment shipment = dao.find(id);
 		if (shipment == null) {
 			return Response.status(Response.Status.NOT_FOUND).build();
@@ -99,7 +103,49 @@ public class ShipmentResource {
 		EntityTag etag = attachEtag(shipment);
 		ResponseBuilder builder = request.evaluatePreconditions(etag);
 		if (builder == null) {
-			builder = Response.ok(shipment);
+			//json
+			if(accept.equals(MediaType.APPLICATION_JSON)){
+				String response = convertXMLtoJSON(mashallXml(shipment));
+				builder = Response.ok(response,MediaType.APPLICATION_JSON);
+			}
+			//xml 
+			else {
+				builder = Response.ok(shipment);
+			}
+			builder.tag(etag);
+		}
+		builder.cacheControl(cc);
+		return builder.build();
+	}
+	
+	/**
+	 * Create a new shipment. If shipment's id is omitted or 0, the server will
+	 * assign a unique ID and return it as the Location header.
+	 * 
+	 * @param element
+	 *            element of JAXBElement
+	 * @param uriInfo
+	 *            information of URI
+	 * @return response 201 CREATED if create success that show location header.
+	 *         If same id response 409 CONFLICT, otherwise 400 BAD REQUEST
+	 */
+	@POST
+	@Consumes({MediaType.APPLICATION_XML,MediaType.APPLICATION_JSON})
+	public Response post(JAXBElement<Shipment> element,
+			@Context UriInfo uriInfo, @Context Request request) {
+		Shipment shipment = element.getValue();
+		if (dao.find(shipment.getId()) != null) {
+			return Response.status(Response.Status.CONFLICT).build();
+		}
+		EntityTag etag = attachEtag(shipment);
+		ResponseBuilder builder = request.evaluatePreconditions(etag);
+		if (builder == null) {
+			if (!dao.save(shipment)) {
+				return Response.status(Response.Status.BAD_REQUEST).build();
+			}
+			URI uri = uriInfo.getAbsolutePathBuilder()
+					.path(shipment.getId() + "").build();
+			builder = Response.created(uri);
 			builder.tag(etag);
 		}
 		builder.cacheControl(cc);
@@ -133,8 +179,27 @@ public class ShipmentResource {
 		EntityTag etag = new EntityTag(shipment.sha1());
 		return etag;
 	}
+	
+	public String mashallXml(Shipment shipment) {
+		JAXBContext jaxbContext;
+		try {
+			jaxbContext = JAXBContext
+					.newInstance(ku.shipment.server.entity.Shipment.class);
 
-	public String mashallXML(Shipments shipment) {
+			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			// Marshal the employees list in console
+			StringWriter sw = new StringWriter();
+			jaxbMarshaller.marshal(shipment, sw);
+			return sw.toString();
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public String mashallXml(Shipments shipments) {
 		JAXBContext jaxbContext;
 		try {
 			jaxbContext = JAXBContext
@@ -144,7 +209,7 @@ public class ShipmentResource {
 			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			// Marshal the employees list in console
 			StringWriter sw = new StringWriter();
-			jaxbMarshaller.marshal(shipment, sw);
+			jaxbMarshaller.marshal(shipments, sw);
 			return sw.toString();
 		} catch (JAXBException e) {
 			// TODO Auto-generated catch block
