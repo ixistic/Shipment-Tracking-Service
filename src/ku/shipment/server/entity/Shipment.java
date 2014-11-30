@@ -29,6 +29,10 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlSeeAlso(Item.class)
 public class Shipment implements Serializable {
+	public static final String STATUS_CREATED = "created";
+	public static final String STATUS_PACKED = "packed";
+	public static final String STATUS_SENDING = "sending";
+	public static final String STATUS_RECIEVED = "recieved";
 	private static final long serialVersionUID = 3645343276027601559L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -205,11 +209,25 @@ public class Shipment implements Serializable {
 		}
 	}
 	
-	public void updateStatus(String status) {
+	public boolean updateStatus(String status) {
 		setStatus(status);
-		if(this.status.equals("created")){
+		if(this.status.equals(STATUS_CREATED)){
 			setStatus_created_time(new Date());
+			return true;
 		}
+		else if(this.status.equals(STATUS_PACKED)){
+			setStatus_packed_time(new Date());
+			return true;
+		}
+		else if(this.status.equals(STATUS_RECIEVED)){
+			setStatus_recieved_time(new Date());
+			return true;
+		}
+		else if(this.status.equals(STATUS_SENDING)){
+			setStatus_sending_time(new Date());
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -224,17 +242,6 @@ public class Shipment implements Serializable {
 		return product.getId() == this.getId();
 	}
 
-
-	/**
-	 * Test if a string is null or only whitespace.
-	 * 
-	 * @param arg
-	 *            the string to test
-	 * @return true if string variable is null or contains only whitespace
-	 */
-	private static boolean isEmpty(String arg) {
-		return arg == null || arg.matches("\\s*");
-	}
 
 	/**
 	 * Construct sha1(secure hash) of a text string.

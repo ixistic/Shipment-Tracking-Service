@@ -87,7 +87,7 @@ public class ShipmentResource {
 	}
 
 	/**
-	 * Get a shipment by id.
+	 * Get a shipment by id for admin.
 	 * 
 	 * @param id
 	 *            identifier of shipment
@@ -122,6 +122,47 @@ public class ShipmentResource {
 	}
 
 	/**
+	 * Get a shipment by id for user.
+	 * 
+	 * @param id
+	 *            identifier of shipment
+	 * @return response 200 OK if result not null that show shipment. If result
+	 *         is null response 404 NOT FOUND
+	 */
+	@GET
+	@Path("{id}/status")
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public Response getStatusById(@PathParam("id") long id,
+			@Context Request request, @HeaderParam("Accept") String accept) {
+		Shipment shipment = dao.find(id);
+		
+		if (shipment == null) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		Shipment status = new Shipment();
+		status.setId(shipment.getId());
+		status.setRecieve_name(shipment.getRecieve_name());
+		status.setRecieve_address(shipment.getRecieve_address());
+		status.setStatus(shipment.getStatus());
+		status.setStatus_created_time(shipment.getStatus_created_time());
+		status.setStatus_packed_time(shipment.getStatus_packed_time());
+		status.setStatus_sending_time(shipment.getStatus_sending_time());
+		status.setStatus_recieved_time(shipment.getStatus_recieved_time());
+		status.setTotal_weight(shipment.getTotal_weight());
+		status.setTotal_cost(shipment.getTotal_cost());
+		// json  
+		if (accept.equals(MediaType.APPLICATION_JSON)) {
+			String response = convertXMLtoJSON(mashallXml(status));
+			return Response.ok(response, MediaType.APPLICATION_JSON).build();
+		}
+		// xml
+		else {
+			return Response.ok(status).build();
+		}
+
+	}
+
+	/**
 	 * Update a shipment. Only update the attributes supplied in request body.
 	 * 
 	 * @param id
@@ -135,29 +176,26 @@ public class ShipmentResource {
 	@Path("{id}")
 	@Consumes(MediaType.APPLICATION_XML)
 	public Response putContact(@PathParam("id") long id,
-			JAXBElement<Shipment> element, @Context Request request) {
+			JAXBElement<Shipment> element, @Context Request request,
+			@Context UriInfo uriInfo) {
 		Shipment newStatus = element.getValue();
 		if (!(newStatus.getId() == id)) {
 			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
 		Shipment shipment = dao.find(id);
-		newStatus.updateStatus(newStatus.getStatus());
+		shipment.updateStatus(newStatus.getStatus());
 		EntityTag etag = attachEtag(shipment);
 		ResponseBuilder builder = request.evaluatePreconditions(etag);
 		if (builder == null) {
-			if (!dao.update(newStatus)) {
+			if (!dao.update(shipment)) {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
-			URI uri = uriInfo.getAbsolutePath();
-			String message = "Location: " + uri + newStatus.getId();
-			builder = Response.ok(message);
+			builder = Response.ok();
 			builder.tag(etag);
 		}
 		builder.cacheControl(cc);
 		return builder.build();
 	}
-
-	
 
 	/**
 	 * Delete a shipment with matching id
@@ -204,7 +242,7 @@ public class ShipmentResource {
 		shipment.setTotal_weight(shipment.calTotalWeight());
 		shipment.setTotal_cost(shipment.calCostByFreightRates(shipment
 				.getTotal_weight()));
-		shipment.updateStatus("created");
+		shipment.updateStatus(Shipment.STATUS_CREATED);
 		if (dao.find(shipment.getId()) != null) {
 			return Response.status(Response.Status.CONFLICT).build();
 		}
@@ -228,30 +266,31 @@ public class ShipmentResource {
 	 * 
 	 * @param id
 	 *            identifier of shipment
-	 * @return response 200 OK if result not null. If result
-	 *         is null response 500 bad request
+	 * @return response 200 OK if result not null. If result is null response
+	 *         500 bad request
 	 */
 	@POST
 	@Path("/calculate")
-	@Consumes({MediaType.APPLICATION_XML})
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Consumes({ MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response calculate(JAXBElement<Shipment> element,
-			@Context Request request,@HeaderParam("Accept") String accept) {
+			@Context Request request, @HeaderParam("Accept") String accept) {
 		Shipment shipment = element.getValue();
 		shipment.setTotal_weight(shipment.calTotalWeight());
-		shipment.setTotal_cost(shipment.calCostByFreightRates(shipment.getTotal_weight()));
+		shipment.setTotal_cost(shipment.calCostByFreightRates(shipment
+				.getTotal_weight()));
 		Shipment answer = new Shipment();
 		answer.setType(shipment.getType());
 		answer.setTotal_weight(shipment.getTotal_weight());
 		answer.setTotal_cost(shipment.getTotal_cost());
-		//json
-		if(accept.equals(MediaType.APPLICATION_JSON)){
+		// json
+		if (accept.equals(MediaType.APPLICATION_JSON)) {
 			String response = convertXMLtoJSON(mashallXml(answer));
-			return Response.ok(response,MediaType.APPLICATION_JSON).build();
+			return Response.ok(response, MediaType.APPLICATION_JSON).build();
 		}
-		//xml 
+		// xml
 		else {
-			 return Response.ok(answer).build();
+			return Response.ok(answer).build();
 		}
 	}
 
