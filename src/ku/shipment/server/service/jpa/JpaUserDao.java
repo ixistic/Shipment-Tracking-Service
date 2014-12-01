@@ -49,16 +49,12 @@ public class JpaUserDao implements UserDao {
 	}
 
 	@Override
-	public List<User> findByTitle(String titlestr) {
-		// LIKE does string match using patterns.
-		Query query = em
-				.createQuery("select c from Shipment c where LOWER(c.title) LIKE :title");
-		// % is wildcard that matches anything
-		query.setParameter("title", "%" + titlestr.toLowerCase() + "%");
-		// now why bother to copy one list to another list?
-		java.util.List<User> result = Lists.newArrayList(query
-				.getResultList());
-		return result;
+	public User findByAccessToken(String accessToken) {
+		Query query = em.createQuery("SELECT c FROM User c WHERE c.accessToken = :accessToken" );
+		query.setParameter("accessToken", accessToken);
+		List<User> list = query.getResultList();
+		if(list.size()==1) return list.get(0);
+		return null;
 	}
 
 	@Override

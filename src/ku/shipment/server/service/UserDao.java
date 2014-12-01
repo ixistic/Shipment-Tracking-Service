@@ -10,7 +10,7 @@ public interface UserDao {
 
 	public abstract List<User> findAll();
 	
-	public abstract List<User> findByTitle(String prefix);
+	public abstract User findByAccessToken(String accessToken);
 	
 	public abstract boolean delete(long id);
 	

@@ -74,8 +74,8 @@ public class ShipmentResource {
 	private OAuthClientRequest request;
 	private OAuthClientResponse response;
 
-	private final String CLIENT_ID = "KEY";
-	private final String CLIENT_SECRET = "SECRET";
+	private final String CLIENT_ID = "229216041764-sjdasnqgvom7lcva4fni6nrcpid4fv7u.apps.googleusercontent.com";
+	private final String CLIENT_SECRET = "wD1SIj5DdJiO5d4qz7FVL0Ko";
 	
 
 	/**
@@ -211,24 +211,31 @@ public class ShipmentResource {
 	@GET
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getShipments(@Context Request request,
-			@HeaderParam("Accept") String accept) {
-		GenericEntity<List<Shipment>> ge = null;
-		ge = convertListToGE(shipmentDao.findAll());
-
-		if (!ge.getEntity().isEmpty()) {
-			// json
-			if (accept.equals(MediaType.APPLICATION_JSON)) {
-				Shipments shipment = new Shipments();
-				shipment.setShipments(shipmentDao.findAll());
-				String response = convertXMLtoJSON(mashallXml(shipment));
-				return Response.ok(response, MediaType.APPLICATION_JSON)
-						.build();
-			}
-			// xml
-			return Response.ok(ge).build();
+			@HeaderParam("Accept") String accept,@HeaderParam("Authorization") String accessToken) {
+		if(accessToken == null){
+			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
-		return Response.status(Response.Status.NOT_FOUND).build();
-
+		User user = userDao.findByAccessToken(accessToken);
+		System.out.println(user.getAccessToken());
+		if(user != null){
+			GenericEntity<List<Shipment>> ge = null;
+			ge = convertListToGE(shipmentDao.findAll());
+	
+			if (!ge.getEntity().isEmpty()) {
+				// json
+				if (accept.equals(MediaType.APPLICATION_JSON)) {
+					Shipments shipment = new Shipments();
+					shipment.setShipments(shipmentDao.findAll());
+					String response = convertXMLtoJSON(mashallXml(shipment));
+					return Response.ok(response, MediaType.APPLICATION_JSON)
+							.build();
+				}
+				// xml
+				return Response.ok(ge).build();
+			}
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}
 
 	/**
