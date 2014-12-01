@@ -14,7 +14,7 @@ public interface ShipmentDao {
 	
 	public abstract boolean delete(long id);
 	
-	public abstract boolean save(Shipment contact);
+	public abstract boolean save(Shipment shipment);
 	
 	public abstract boolean update(Shipment update);
 	

@@ -2,6 +2,7 @@ package ku.shipment.server.resource;
 
 import java.io.StringWriter;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.inject.Singleton;
@@ -14,6 +15,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
@@ -21,6 +24,7 @@ import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBContext;
@@ -28,11 +32,26 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import ku.shipment.oauth.OAuthTokenResponse;
 import ku.shipment.server.entity.Shipment;
 import ku.shipment.server.entity.Shipments;
 import ku.shipment.server.service.ShipmentDaoFactory;
 import ku.shipment.server.service.ShipmentDao;
+import ku.shipment.server.service.UserDao;
+import ku.shipment.server.service.UserDaoFactory;
 
+import org.apache.oltu.oauth2.client.OAuthClient;
+import org.apache.oltu.oauth2.client.URLConnectionClient;
+import org.apache.oltu.oauth2.client.request.OAuthBearerClientRequest;
+import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
+import org.apache.oltu.oauth2.client.response.OAuthClientResponse;
+import org.apache.oltu.oauth2.client.response.OAuthJSONAccessTokenResponse;
+import org.apache.oltu.oauth2.client.response.OAuthResourceResponse;
+import org.apache.oltu.oauth2.common.OAuth;
+import org.apache.oltu.oauth2.common.OAuthProviderType;
+import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
+import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
+import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
@@ -40,10 +59,21 @@ import org.json.XML;
 @Path("/shipments")
 @Singleton
 public class ShipmentResource {
-	private ShipmentDao dao;
+	private ShipmentDao shipmentDao;
+	private UserDao userDao;
 	private CacheControl cc;
 	@Context
 	private UriInfo uriInfo;
+	
+	private OAuthClient client;
+	private OAuthClientRequest request;
+	private OAuthClientResponse response;
+	private String REDIRECT_URI = UriBuilder.fromUri(uriInfo.getBaseUri())
+			.path("oauth2callback").build().toString();
+	private String ACCESS_TOKEN;
+	private final String CLIENT_ID = "195639712959-mav09j1h8glutoqbhubnknkdcn9slvca.apps.googleusercontent.com";
+	private final String CLIENT_SECRET = "nt9fPMyv26sxzWUS0MX_IPa5";
+	
 
 	/**
 	 * Construct ShipmentDao from DaoFactory.
@@ -51,8 +81,79 @@ public class ShipmentResource {
 	public ShipmentResource() {
 		cc = new CacheControl();
 		cc.setMaxAge(46800);
-		dao = ShipmentDaoFactory.getInstance().getShipmentDao();
+		shipmentDao = ShipmentDaoFactory.getInstance().getShipmentDao();
+		userDao = UserDaoFactory.getInstance().getUserDao();
 		System.out.println("Initial ShipmentDao.");
+	}
+	
+	@GET
+	@Path("/google")
+	public Response authenticate() {
+		try {
+			request = OAuthClientRequest
+					.authorizationProvider(OAuthProviderType.GOOGLE)
+					.setClientId(CLIENT_ID)
+					.setResponseType("code")
+					.setScope(
+							"email")
+					.setRedirectURI( REDIRECT_URI
+							)
+					.buildQueryMessage();
+			
+			URI redirect = new URI(request.getLocationUri());
+			return Response.seeOther(redirect).build();
+		} catch (OAuthSystemException e) {
+			throw new WebApplicationException(e);
+		} catch (URISyntaxException e) {
+			throw new WebApplicationException(e);
+		}
+	}
+
+	@GET
+	@Path("/oauth2callback")
+	public Response authorize(@QueryParam("code") String code,
+			@QueryParam("state") String state) {
+		// path to redirect after authorization
+		final URI uri = uriInfo.getBaseUriBuilder().path("").build();
+
+		try {
+			// Request to exchange code for access token and id token
+			request = OAuthClientRequest
+					.tokenProvider(OAuthProviderType.GOOGLE)
+					.setCode(code)
+					.setClientId(CLIENT_ID)
+					.setClientSecret(CLIENT_SECRET)
+					.setRedirectURI( REDIRECT_URI
+							)
+					.setGrantType(GrantType.AUTHORIZATION_CODE)
+					.buildBodyMessage();
+			
+			client = new OAuthClient(new URLConnectionClient());
+			response = client
+					.accessToken(request, OAuthTokenResponse.class);
+			
+			// Get the access token from the response
+			ACCESS_TOKEN = ((OAuthJSONAccessTokenResponse) response).getAccessToken();
+
+			
+			System.out.println(((OAuthResourceResponse) getClientResource()).getBody());
+			
+			// Add code to notify application of authenticated user
+		} catch (OAuthProblemException | OAuthSystemException e) {
+			e.printStackTrace();
+		} 
+
+		return Response.seeOther(uri).build();
+	}
+	
+	public OAuthClientResponse getClientResource() {
+		try {
+			request  = new OAuthBearerClientRequest("https://www.googleapis.com/plus/v1/people/me").setAccessToken(ACCESS_TOKEN).buildQueryMessage();
+			return client.resource(request, OAuth.HttpMethod.GET, OAuthResourceResponse.class);
+		} catch (OAuthSystemException | OAuthProblemException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	/**
@@ -68,13 +169,13 @@ public class ShipmentResource {
 	public Response getShipments(@Context Request request,
 			@HeaderParam("Accept") String accept) {
 		GenericEntity<List<Shipment>> ge = null;
-		ge = convertListToGE(dao.findAll());
+		ge = convertListToGE(shipmentDao.findAll());
 
 		if (!ge.getEntity().isEmpty()) {
 			// json
 			if (accept.equals(MediaType.APPLICATION_JSON)) {
 				Shipments shipment = new Shipments();
-				shipment.setShipments(dao.findAll());
+				shipment.setShipments(shipmentDao.findAll());
 				String response = convertXMLtoJSON(mashallXml(shipment));
 				return Response.ok(response, MediaType.APPLICATION_JSON)
 						.build();
@@ -99,7 +200,7 @@ public class ShipmentResource {
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getShipmentById(@PathParam("id") long id,
 			@Context Request request, @HeaderParam("Accept") String accept) {
-		Shipment shipment = dao.find(id);
+		Shipment shipment = shipmentDao.find(id);
 		System.out.println(shipment.getItem().size());
 		if (shipment == null) {
 			return Response.status(Response.Status.NOT_FOUND).build();
@@ -135,7 +236,7 @@ public class ShipmentResource {
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getStatusById(@PathParam("id") long id,
 			@Context Request request, @HeaderParam("Accept") String accept) {
-		Shipment shipment = dao.find(id);
+		Shipment shipment = shipmentDao.find(id);
 		
 		if (shipment == null) {
 			return Response.status(Response.Status.NOT_FOUND).build();
@@ -183,12 +284,12 @@ public class ShipmentResource {
 		if (!(newStatus.getId() == id)) {
 			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
-		Shipment shipment = dao.find(id);
+		Shipment shipment = shipmentDao.find(id);
 		shipment.updateStatus(newStatus.getStatus());
 		EntityTag etag = attachEtag(shipment);
 		ResponseBuilder builder = request.evaluatePreconditions(etag);
 		if (builder == null) {
-			if (!dao.update(shipment)) {
+			if (!shipmentDao.update(shipment)) {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
 			builder = Response.ok();
@@ -210,14 +311,14 @@ public class ShipmentResource {
 	@Path("{id}")
 	public Response deleteShipment(@PathParam("id") long id,
 			@Context Request request) {
-		Shipment shipment = dao.find(id);
+		Shipment shipment = shipmentDao.find(id);
 		if (shipment == null) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
 		EntityTag etag = attachEtag(shipment);
 		ResponseBuilder builder = request.evaluatePreconditions(etag);
 		if (builder == null) {
-			dao.delete(id);
+			shipmentDao.delete(id);
 			builder = Response.ok();
 		}
 		builder.cacheControl(cc);
@@ -245,13 +346,13 @@ public class ShipmentResource {
 				.getTotal_weight()));
 		shipment.updateStatus(Shipment.STATUS_CREATED);
 		shipment.setForeignKeyToItem();
-		if (dao.find(shipment.getId()) != null) {
+		if (shipmentDao.find(shipment.getId()) != null) {
 			return Response.status(Response.Status.CONFLICT).build();
 		}
 		EntityTag etag = attachEtag(shipment);
 		ResponseBuilder builder = request.evaluatePreconditions(etag);
 		if (builder == null) {
-			if (!dao.save(shipment)) {
+			if (!shipmentDao.save(shipment)) {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
 			URI uri = uriInfo.getAbsolutePathBuilder()

@@ -27,7 +27,7 @@ private static final int PORT = 8080;
 		
 		ServletHolder holder = new ServletHolder( org.glassfish.jersey.servlet.ServletContainer.class );
 		
-		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "ku.oauth.resource");
+		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "ku.shipment.oauth.resource");
 		context.addServlet( holder, "/*" );
 
 		server.setHandler( context );
@@ -35,7 +35,8 @@ private static final int PORT = 8080;
 		System.out.println("Starting Jetty server on port " + port);
 		server.start();
 		
-		return server.getURI().toString();
+//		return server.getURI().toString();
+		return "http://localhost:"+port+"/";
 	}
 	
 	/* Start the server with default port. */
