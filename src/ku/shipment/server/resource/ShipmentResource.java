@@ -3,7 +3,10 @@ package ku.shipment.server.resource;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
@@ -35,6 +38,7 @@ import javax.xml.bind.Marshaller;
 import ku.shipment.oauth.OAuthTokenResponse;
 import ku.shipment.server.entity.Shipment;
 import ku.shipment.server.entity.Shipments;
+import ku.shipment.server.entity.User;
 import ku.shipment.server.service.ShipmentDaoFactory;
 import ku.shipment.server.service.ShipmentDao;
 import ku.shipment.server.service.UserDao;
@@ -52,6 +56,7 @@ import org.apache.oltu.oauth2.common.OAuthProviderType;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
@@ -68,11 +73,9 @@ public class ShipmentResource {
 	private OAuthClient client;
 	private OAuthClientRequest request;
 	private OAuthClientResponse response;
-	private String REDIRECT_URI = UriBuilder.fromUri(uriInfo.getBaseUri())
-			.path("oauth2callback").build().toString();
-	private String ACCESS_TOKEN;
-	private final String CLIENT_ID = "195639712959-mav09j1h8glutoqbhubnknkdcn9slvca.apps.googleusercontent.com";
-	private final String CLIENT_SECRET = "nt9fPMyv26sxzWUS0MX_IPa5";
+
+	private final String CLIENT_ID = "KEY";
+	private final String CLIENT_SECRET = "SECRET";
 	
 
 	/**
@@ -87,7 +90,7 @@ public class ShipmentResource {
 	}
 	
 	@GET
-	@Path("/google")
+	@Path("/auth")
 	public Response authenticate() {
 		try {
 			request = OAuthClientRequest
@@ -96,7 +99,8 @@ public class ShipmentResource {
 					.setResponseType("code")
 					.setScope(
 							"email")
-					.setRedirectURI( REDIRECT_URI
+					.setRedirectURI( UriBuilder.fromUri(uriInfo.getBaseUri())
+							.path("shipments/oauth2callback").build().toString()
 							)
 					.buildQueryMessage();
 			
@@ -114,8 +118,10 @@ public class ShipmentResource {
 	public Response authorize(@QueryParam("code") String code,
 			@QueryParam("state") String state) {
 		// path to redirect after authorization
-		final URI uri = uriInfo.getBaseUriBuilder().path("").build();
 
+		String accessToken = "";
+		String email = "";
+		
 		try {
 			// Request to exchange code for access token and id token
 			request = OAuthClientRequest
@@ -123,7 +129,8 @@ public class ShipmentResource {
 					.setCode(code)
 					.setClientId(CLIENT_ID)
 					.setClientSecret(CLIENT_SECRET)
-					.setRedirectURI( REDIRECT_URI
+					.setRedirectURI( UriBuilder.fromUri(uriInfo.getBaseUri())
+							.path("shipments/oauth2callback").build().toString()
 							)
 					.setGrantType(GrantType.AUTHORIZATION_CODE)
 					.buildBodyMessage();
@@ -133,24 +140,61 @@ public class ShipmentResource {
 					.accessToken(request, OAuthTokenResponse.class);
 			
 			// Get the access token from the response
-			ACCESS_TOKEN = ((OAuthJSONAccessTokenResponse) response).getAccessToken();
-
+			accessToken = ((OAuthJSONAccessTokenResponse) response).getAccessToken();
 			
-			System.out.println(((OAuthResourceResponse) getClientResource()).getBody());
+			email = getEmail(((OAuthResourceResponse)getClientResource(accessToken)).getBody());
+			
+			User user = new User();
+			user.setAccessToken(accessToken);
+			user.setEmail(email);
+			userDao.save(user);
 			
 			// Add code to notify application of authenticated user
 		} catch (OAuthProblemException | OAuthSystemException e) {
 			e.printStackTrace();
 		} 
 
+		final URI uri = uriInfo.getBaseUriBuilder().path(accessToken).build();
+
 		return Response.seeOther(uri).build();
 	}
 	
-	public OAuthClientResponse getClientResource() {
+	public OAuthClientResponse getClientResource(String accessToken) {
 		try {
-			request  = new OAuthBearerClientRequest("https://www.googleapis.com/plus/v1/people/me").setAccessToken(ACCESS_TOKEN).buildQueryMessage();
-			return client.resource(request, OAuth.HttpMethod.GET, OAuthResourceResponse.class);
+			request = new OAuthBearerClientRequest(
+					"https://www.googleapis.com/plus/v1/people/me")
+					.setAccessToken(accessToken).buildQueryMessage();
+			return client.resource(request, OAuth.HttpMethod.GET,
+					OAuthResourceResponse.class);
 		} catch (OAuthSystemException | OAuthProblemException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public String getEmail(String body) {
+		
+		Map<String, Object> params = new HashMap<String, Object>();
+		try {
+			JSONObject obj = new JSONObject(body);
+			Iterator<?> it = obj.keys();
+			while (it.hasNext()) {
+				Object o = it.next();
+				if (o instanceof String) {
+					String key = (String) o;
+					params.put(key, obj.get(key));
+				}
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			JSONArray arr = new JSONArray(params.get("emails").toString());
+			String j = arr.get(0).toString();
+			JSONObject json = new JSONObject(j);
+			return json.getString("value");
+		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 		return null;

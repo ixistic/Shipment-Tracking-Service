@@ -27,7 +27,7 @@ private static final int PORT = 8080;
 		
 		ServletHolder holder = new ServletHolder( org.glassfish.jersey.servlet.ServletContainer.class );
 		
-		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "ku.shipment.oauth.resource");
+		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "ku.shipment.server.resource");
 		context.addServlet( holder, "/*" );
 
 		server.setHandler( context );
