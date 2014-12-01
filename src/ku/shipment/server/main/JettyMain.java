@@ -2,7 +2,7 @@ package ku.shipment.server.main;
 
 
 
-import ku.shipment.server.service.DaoFactory;
+import ku.shipment.server.service.ShipmentDaoFactory;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -64,7 +64,7 @@ public class JettyMain {
 	 */
 	public static void stopServer() {
 		System.out.println("Stopping server.");
-		DaoFactory.getInstance().shutdown();
+		ShipmentDaoFactory.getInstance().shutdown();
 		System.out.println("Shutted down.");
 		try {
 			server.stop();

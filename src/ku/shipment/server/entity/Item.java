@@ -4,8 +4,10 @@ import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -41,14 +43,13 @@ public class Item implements Serializable {
 	private float weightPerUnit;
 	@Column(name = "quantity")
 	private int quantity;
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name = "shipment_id", referencedColumnName = "id")
 	@XmlInverseReference(mappedBy = "item")
 	@XmlTransient
 	private Shipment shipment;
 
 	public Item() {
-
 	}
 
 	public Item(long id) {
@@ -89,6 +90,17 @@ public class Item implements Serializable {
 	
 	public float getTotalWeight(){
 		return this.weightPerUnit*this.quantity;
+	}
+
+	public Shipment getShipment() {
+		return shipment;
+	}
+
+	public void setShipment(Shipment shipment) {
+		this.shipment = shipment;
+		if (!shipment.getItem().contains(this)) {
+            shipment.getItem().add(this);
+        }
 	}
 
 	@Override

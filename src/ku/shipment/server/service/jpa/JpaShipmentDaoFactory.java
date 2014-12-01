@@ -7,22 +7,22 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
-import ku.shipment.server.service.DaoFactory;
+import ku.shipment.server.service.ShipmentDaoFactory;
 import ku.shipment.server.service.ShipmentDao;
 
-public class JpaDaoFactory extends DaoFactory {
+public class JpaShipmentDaoFactory extends ShipmentDaoFactory {
 	private static final String PERSISTENCE_UNIT = "shipments";
-	private static JpaDaoFactory factory;
+	private static JpaShipmentDaoFactory factory;
 	private ShipmentDao shipmentDao;
 	private final EntityManagerFactory emf;
 	private EntityManager em;
 	private static Logger logger;
 
 	static {
-		logger = Logger.getLogger(JpaDaoFactory.class.getName());
+		logger = Logger.getLogger(JpaShipmentDaoFactory.class.getName());
 	}
 
-	public JpaDaoFactory() {
+	public JpaShipmentDaoFactory() {
 		emf = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT);
 		em = emf.createEntityManager();
 		shipmentDao = new JpaShipmentDao(em);
@@ -33,9 +33,9 @@ public class JpaDaoFactory extends DaoFactory {
 	 * 
 	 * @return instance of DaoFactory.
 	 */
-	public static JpaDaoFactory getInstance() {
+	public static JpaShipmentDaoFactory getInstance() {
 		if (factory == null) {
-			factory = new JpaDaoFactory();
+			factory = new JpaShipmentDaoFactory();
 		}
 		return factory;
 	}

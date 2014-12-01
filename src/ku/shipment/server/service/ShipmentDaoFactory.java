@@ -1,16 +1,16 @@
 package ku.shipment.server.service;
 
-import ku.shipment.server.service.jpa.JpaDaoFactory;
+import ku.shipment.server.service.jpa.JpaShipmentDaoFactory;
 
-public abstract class DaoFactory {
+public abstract class ShipmentDaoFactory {
 
-	private static DaoFactory factory;
+	private static ShipmentDaoFactory factory;
 
 	/**
 	 * this class shouldn't be instantiated, but constructor must be visible to
 	 * subclasses.
 	 */
-	protected DaoFactory() {
+	protected ShipmentDaoFactory() {
 
 	}
 
@@ -19,16 +19,16 @@ public abstract class DaoFactory {
 	 * 
 	 * @return instance of a concrete DaoFactory
 	 */
-	public static DaoFactory getInstance() {
+	public static ShipmentDaoFactory getInstance() {
 
 		if (factory == null) {
-			setFactory(JpaDaoFactory.getInstance());
+			setFactory(JpaShipmentDaoFactory.getInstance());
 		}
 
 		return factory;
 	}
 
-	public static void setFactory(DaoFactory daoFactory) {
+	public static void setFactory(ShipmentDaoFactory daoFactory) {
 		factory = daoFactory;
 	}
 

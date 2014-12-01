@@ -3,12 +3,14 @@ package ku.shipment.server.entity;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -19,7 +21,7 @@ import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 
@@ -68,9 +70,9 @@ public class Shipment implements Serializable {
 	@Column(name="total_cost")
 	private float total_cost;
 	
-	@XmlElementWrapper(name = "items")
-	@OneToMany(mappedBy="shipment",cascade = CascadeType.PERSIST) 
-	private List<Item> item;
+	@XmlElement(name = "item")
+	@OneToMany(mappedBy="shipment",cascade = CascadeType.ALL,fetch=FetchType.LAZY) 
+	private List<Item> item = new ArrayList<Item>();
 	
 	public static long getSerialversionuid() {
 		return serialVersionUID;
@@ -183,13 +185,20 @@ public class Shipment implements Serializable {
 	public void setTotal_weight(float total_weight) {
 		this.total_weight = total_weight;
 	}
-
-	public List<Item> getItems() {
+	
+	public List<Item> getItem() {
 		return item;
 	}
 
-	public void setItems(List<Item> item) {
+	public void setItem(List<Item> item) {
 		this.item = item;
+	}
+
+	public void addItem(Item item){
+		this.item.add(item);
+		if (item.getShipment() != this) {
+            item.setShipment(this);
+        }
 	}
 	
 	public float calTotalWeight(){
@@ -264,4 +273,11 @@ public class Shipment implements Serializable {
          
         return sb.toString();
     }
+
+	public void setForeignKeyToItem() {
+		for(Item single_item : item){
+			single_item.setShipment(this);
+		}
+		
+	}
 }

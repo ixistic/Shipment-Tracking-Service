@@ -30,7 +30,7 @@ import javax.xml.bind.Marshaller;
 
 import ku.shipment.server.entity.Shipment;
 import ku.shipment.server.entity.Shipments;
-import ku.shipment.server.service.DaoFactory;
+import ku.shipment.server.service.ShipmentDaoFactory;
 import ku.shipment.server.service.ShipmentDao;
 
 import org.json.JSONException;
@@ -51,7 +51,7 @@ public class ShipmentResource {
 	public ShipmentResource() {
 		cc = new CacheControl();
 		cc.setMaxAge(46800);
-		dao = DaoFactory.getInstance().getShipmentDao();
+		dao = ShipmentDaoFactory.getInstance().getShipmentDao();
 		System.out.println("Initial ShipmentDao.");
 	}
 
@@ -100,6 +100,7 @@ public class ShipmentResource {
 	public Response getShipmentById(@PathParam("id") long id,
 			@Context Request request, @HeaderParam("Accept") String accept) {
 		Shipment shipment = dao.find(id);
+		System.out.println(shipment.getItem().size());
 		if (shipment == null) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
@@ -243,6 +244,7 @@ public class ShipmentResource {
 		shipment.setTotal_cost(shipment.calCostByFreightRates(shipment
 				.getTotal_weight()));
 		shipment.updateStatus(Shipment.STATUS_CREATED);
+		shipment.setForeignKeyToItem();
 		if (dao.find(shipment.getId()) != null) {
 			return Response.status(Response.Status.CONFLICT).build();
 		}
