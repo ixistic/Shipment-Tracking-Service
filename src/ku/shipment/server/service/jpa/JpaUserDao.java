@@ -18,7 +18,7 @@ public class JpaUserDao implements UserDao {
 
 	public JpaUserDao(EntityManager em) {
 		this.em = em;
-//		createTestShipment();
+		// createTestShipment();
 	}
 
 	private void createTestShipment() {
@@ -50,10 +50,23 @@ public class JpaUserDao implements UserDao {
 
 	@Override
 	public User findByAccessToken(String accessToken) {
-		Query query = em.createQuery("SELECT c FROM User c WHERE c.accessToken = :accessToken" );
+		Query query = em
+				.createQuery("SELECT c FROM User c WHERE c.accessToken = :accessToken");
 		query.setParameter("accessToken", accessToken);
 		List<User> list = query.getResultList();
-		if(list.size()==1) return list.get(0);
+		if (list.size() == 1)
+			return list.get(0);
+		return null;
+	}
+
+	@Override
+	public User findByEmail(String email) {
+		Query query = em
+				.createQuery("SELECT c FROM User c WHERE c.email = :email");
+		query.setParameter("email", email);
+		List<User> list = query.getResultList();
+		if (list.size() == 1)
+			return list.get(0);
 		return null;
 	}
 
@@ -112,8 +125,7 @@ public class JpaUserDao implements UserDao {
 			tx.begin();
 			User user = find(update.getId());
 			if (user == null)
-				throw new IllegalArgumentException(
-						"Can't update a null user");
+				throw new IllegalArgumentException("Can't update a null user");
 			em.merge(update);
 			tx.commit();
 			return true;

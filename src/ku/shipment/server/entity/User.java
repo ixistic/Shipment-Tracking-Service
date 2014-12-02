@@ -29,14 +29,17 @@ public class User implements Serializable{
 	private String email;
 	@Column(name = "accessToken")
 	private String accessToken;
+	@Column(name = "type")
+	private int type;
 	
 	public User(){
 		
 	}
 	
-	public User(String email,String accessToken){
+	public User(String email,String accessToken,int type){
 		this.email = email;
 		this.accessToken = accessToken;
+		this.type = type;
 	}
 
 	public long getId() {
@@ -63,6 +66,14 @@ public class User implements Serializable{
 		this.accessToken = accessToken;
 	}
 	
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
+
 	@Override
 	public String toString() {
 		return String.format("[%d]", id);

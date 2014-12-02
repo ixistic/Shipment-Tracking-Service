@@ -143,11 +143,17 @@ public class ShipmentResource {
 			accessToken = ((OAuthJSONAccessTokenResponse) response).getAccessToken();
 			
 			email = getEmail(((OAuthResourceResponse)getClientResource(accessToken)).getBody());
-			
-			User user = new User();
-			user.setAccessToken(accessToken);
-			user.setEmail(email);
-			userDao.save(user);
+			User oldUser = userDao.findByEmail(email);
+			if(oldUser != null){
+				oldUser.setAccessToken(accessToken);
+				userDao.update(oldUser);
+			}
+			else{
+				User user = new User();
+				user.setAccessToken(accessToken);
+				user.setEmail(email);
+				userDao.save(user);
+			}
 			
 			// Add code to notify application of authenticated user
 		} catch (OAuthProblemException | OAuthSystemException e) {
@@ -216,7 +222,6 @@ public class ShipmentResource {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 		User user = userDao.findByAccessToken(accessToken);
-		System.out.println(user.getAccessToken());
 		if(user != null){
 			GenericEntity<List<Shipment>> ge = null;
 			ge = convertListToGE(shipmentDao.findAll());
@@ -252,7 +257,6 @@ public class ShipmentResource {
 	public Response getShipmentById(@PathParam("id") long id,
 			@Context Request request, @HeaderParam("Accept") String accept) {
 		Shipment shipment = shipmentDao.find(id);
-		System.out.println(shipment.getItem().size());
 		if (shipment == null) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}

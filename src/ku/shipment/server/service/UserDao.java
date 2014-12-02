@@ -12,6 +12,8 @@ public interface UserDao {
 	
 	public abstract User findByAccessToken(String accessToken);
 	
+	public abstract User findByEmail(String email);
+	
 	public abstract boolean delete(long id);
 	
 	public abstract boolean save(User user);
