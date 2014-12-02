@@ -2,6 +2,11 @@ package ku.shipment.server.main;
 
 
 
+import java.util.EnumSet;
+
+import javax.servlet.DispatcherType;
+
+import ku.shipment.server.resource.CORSResponseFilter;
 import ku.shipment.server.service.ShipmentDaoFactory;
 
 import org.eclipse.jetty.server.Server;
@@ -51,6 +56,7 @@ public class JettyMain {
 		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES,RESOURCE_PACKAGE);
 		holder.setInitParameter(ServerProperties.JSON_PROCESSING_FEATURE_DISABLE, "false");
 		context.addServlet(holder, "/*");
+		context.addFilter(CORSResponseFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
 		server.setHandler(context);
 		System.out.println("Starting Jetty server on port ");
 		server.start();

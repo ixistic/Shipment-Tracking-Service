@@ -24,11 +24,12 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.GenericEntity;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -39,8 +40,8 @@ import ku.shipment.oauth.OAuthTokenResponse;
 import ku.shipment.server.entity.Shipment;
 import ku.shipment.server.entity.Shipments;
 import ku.shipment.server.entity.User;
-import ku.shipment.server.service.ShipmentDaoFactory;
 import ku.shipment.server.service.ShipmentDao;
+import ku.shipment.server.service.ShipmentDaoFactory;
 import ku.shipment.server.service.UserDao;
 import ku.shipment.server.service.UserDaoFactory;
 
@@ -169,9 +170,28 @@ public class ShipmentResource {
 			e.printStackTrace();
 		}
 
-		final URI uri = uriInfo.getBaseUriBuilder().path(accessToken).build();
+		final URI uri = uriInfo.getBaseUriBuilder()
+				.path("shipments/" + accessToken).build();
 
 		return Response.seeOther(uri).build();
+	}
+
+	/**
+	 * 
+	 * @param token
+	 * @return
+	 */
+	@GET
+	@Path("{accessToken}")
+	public Response getAccessToken(@PathParam("accessToken") String token) {
+		URI uri = null;
+		try {
+			uri = new URI("http://158.108.139.141/web/index.php?accessToken="
+					+ token);
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		return Response.seeOther(uri).entity(token).build();
 	}
 
 	/**
@@ -226,18 +246,22 @@ public class ShipmentResource {
 	}
 
 	/**
-	 * Get all shipments
 	 * 
 	 * @param request
 	 * @param accept
 	 * @param accessToken
+	 * @param auth
 	 * @return
 	 */
 	@GET
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getShipments(@Context Request request,
 			@HeaderParam("Accept") String accept,
-			@HeaderParam("Authorization") String accessToken) {
+			@HeaderParam("Authorization") String accessToken,
+			@QueryParam("auth_key") String auth) {
+		if (auth != null) {
+			accessToken = auth;
+		}
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -247,16 +271,17 @@ public class ShipmentResource {
 			ge = convertListToGE(shipmentDao.findAll());
 
 			if (!ge.getEntity().isEmpty()) {
-				// json
-				if (accept.equals(MediaType.APPLICATION_JSON)) {
-					Shipments shipment = new Shipments();
-					shipment.setShipments(shipmentDao.findAll());
-					String response = convertXMLtoJSON(mashallXml(shipment));
-					return Response.ok(response, MediaType.APPLICATION_JSON)
-							.build();
-				}
+				System.out.println("GET ALL");
 				// xml
-				return Response.ok(ge).build();
+				if (accept.equals(MediaType.APPLICATION_XML)) {
+					return Response.ok(ge).build();
+				}
+				// default json
+				Shipments shipment = new Shipments();
+				shipment.setShipments(shipmentDao.findAll());
+				String response = convertXMLtoJSON(mashallXml(shipment));
+				return Response.ok(response, MediaType.APPLICATION_JSON)
+						.build();
 			}
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
@@ -276,7 +301,11 @@ public class ShipmentResource {
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getShipmentById(@PathParam("id") long id,
 			@Context Request request, @HeaderParam("Accept") String accept,
-			@HeaderParam("Authorization") String accessToken) {
+			@HeaderParam("Authorization") String accessToken,
+			@QueryParam("auth_key") String auth) {
+		if (auth != null) {
+			accessToken = auth;
+		}
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -363,7 +392,11 @@ public class ShipmentResource {
 	public Response putContact(@PathParam("id") long id,
 			JAXBElement<Shipment> element, @Context Request request,
 			@Context UriInfo uriInfo,
-			@HeaderParam("Authorization") String accessToken) {
+			@HeaderParam("Authorization") String accessToken,
+			@QueryParam("auth_key") String auth) {
+		if (auth != null) {
+			accessToken = auth;
+		}
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -402,7 +435,11 @@ public class ShipmentResource {
 	@Path("{id}")
 	public Response deleteShipment(@PathParam("id") long id,
 			@Context Request request,
-			@HeaderParam("Authorization") String accessToken) {
+			@HeaderParam("Authorization") String accessToken,
+			@QueryParam("auth_key") String auth) {
+		if (auth != null) {
+			accessToken = auth;
+		}
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -439,7 +476,11 @@ public class ShipmentResource {
 	@Consumes({ MediaType.APPLICATION_XML })
 	public Response post(JAXBElement<Shipment> element,
 			@Context UriInfo uriInfo, @Context Request request,
-			@HeaderParam("Authorization") String accessToken) {
+			@HeaderParam("Authorization") String accessToken,
+			@QueryParam("auth_key") String auth) {
+		if (auth != null) {
+			accessToken = auth;
+		}
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
