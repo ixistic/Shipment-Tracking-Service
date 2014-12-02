@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -39,47 +40,47 @@ public class Shipment implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@XmlAttribute
-	@Column(name="id")
+	@Column(name = "id")
 	private long id;
-	@Column(name="status")
+	@Column(name = "status")
 	private String status;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="status_created_time")
+	@Column(name = "status_created_time")
 	private Date status_created_time;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="status_packed_time")
+	@Column(name = "status_packed_time")
 	private Date status_packed_time;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="status_sending_time")
+	@Column(name = "status_sending_time")
 	private Date status_sending_time;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="status_recieved_time")
+	@Column(name = "status_recieved_time")
 	private Date status_recieved_time;
-	@Column(name="type")
+	@Column(name = "type")
 	private String type;
-	@Column(name="courier_name")
+	@Column(name = "courier_name")
 	private String courier_name;
-	@Column(name="courier_address")
+	@Column(name = "courier_address")
 	private String courier_address;
-	@Column(name="recieve_name")
+	@Column(name = "recieve_name")
 	private String recieve_name;
-	@Column(name="recieve_address")
+	@Column(name = "recieve_address")
 	private String recieve_address;
-	@Column(name="total_weight")
+	@Column(name = "total_weight")
 	private float total_weight;
-	@Column(name="total_cost")
+	@Column(name = "total_cost")
 	private float total_cost;
-	
+
 	@XmlElement(name = "item")
-	@OneToMany(mappedBy="shipment",cascade = CascadeType.ALL,fetch=FetchType.LAZY) 
+	@OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Item> item = new ArrayList<Item>();
-	
+
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
 
 	public Shipment() {
-		
+
 	}
 
 	public long getId() {
@@ -89,7 +90,7 @@ public class Shipment implements Serializable {
 	public void setId(long id) {
 		this.id = id;
 	}
-	
+
 	public String getStatus() {
 		return status;
 	}
@@ -177,7 +178,7 @@ public class Shipment implements Serializable {
 	public void setTotal_cost(float total_cost) {
 		this.total_cost = total_cost;
 	}
-	
+
 	public float getTotal_weight() {
 		return total_weight;
 	}
@@ -185,7 +186,7 @@ public class Shipment implements Serializable {
 	public void setTotal_weight(float total_weight) {
 		this.total_weight = total_weight;
 	}
-	
+
 	public List<Item> getItem() {
 		return item;
 	}
@@ -194,45 +195,42 @@ public class Shipment implements Serializable {
 		this.item = item;
 	}
 
-	public void addItem(Item item){
+	public void addItem(Item item) {
 		this.item.add(item);
 		if (item.getShipment() != this) {
-            item.setShipment(this);
-        }
+			item.setShipment(this);
+		}
 	}
-	
-	public float calTotalWeight(){
+
+	public float calTotalWeight() {
 		float total = 0;
-		for(Item single_item : item ){
+		for (Item single_item : item) {
 			total += single_item.getTotalWeight();
 		}
 		return total;
 	}
-	
+
 	public float calCostByFreightRates(float weight) {
 		if (getType().equals("EMS")) {
-			return (weight/20 * 8 ) + 20;
+			return (weight / 20 * 8) + 20;
 
 		} else {
-			return (weight/20 * 8 ) + 4;
+			return (weight / 20 * 8) + 4;
 		}
 	}
-	
+
 	public boolean updateStatus(String status) {
 		setStatus(status);
-		if(this.status.equals(STATUS_CREATED)){
+		if (this.status.equals(STATUS_CREATED)) {
 			setStatus_created_time(new Date());
 			return true;
-		}
-		else if(this.status.equals(STATUS_PACKED)){
+		} else if (this.status.equals(STATUS_PACKED)) {
 			setStatus_packed_time(new Date());
 			return true;
-		}
-		else if(this.status.equals(STATUS_RECIEVED)){
+		} else if (this.status.equals(STATUS_RECIEVED)) {
 			setStatus_recieved_time(new Date());
 			return true;
-		}
-		else if(this.status.equals(STATUS_SENDING)){
+		} else if (this.status.equals(STATUS_SENDING)) {
 			setStatus_sending_time(new Date());
 			return true;
 		}
@@ -251,33 +249,34 @@ public class Shipment implements Serializable {
 		return product.getId() == this.getId();
 	}
 
-
 	/**
 	 * Construct sha1(secure hash) of a text string.
+	 * 
 	 * @return string string of sha1
 	 */
 	public String sha1() {
-		int text = this.hashCode(); 
-		String input = ""+id+text;
-        MessageDigest mDigest = null;
+		int text = this.hashCode();
+		String input = "" + id + text;
+		MessageDigest mDigest = null;
 		try {
 			mDigest = MessageDigest.getInstance("SHA1");
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-        byte[] result = mDigest.digest(input.getBytes());
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < result.length; i++) {
-            sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16).substring(1));
-        }
-         
-        return sb.toString();
-    }
+		byte[] result = mDigest.digest(input.getBytes());
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < result.length; i++) {
+			sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16)
+					.substring(1));
+		}
+
+		return sb.toString();
+	}
 
 	public void setForeignKeyToItem() {
-		for(Item single_item : item){
+		for (Item single_item : item) {
 			single_item.setShipment(this);
 		}
-		
+
 	}
 }

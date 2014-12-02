@@ -69,14 +69,13 @@ public class ShipmentResource {
 	private CacheControl cc;
 	@Context
 	private UriInfo uriInfo;
-	
+
 	private OAuthClient client;
 	private OAuthClientRequest request;
 	private OAuthClientResponse response;
 
 	private final String CLIENT_ID = "229216041764-sjdasnqgvom7lcva4fni6nrcpid4fv7u.apps.googleusercontent.com";
 	private final String CLIENT_SECRET = "wD1SIj5DdJiO5d4qz7FVL0Ko";
-	
 
 	/**
 	 * Construct ShipmentDao from DaoFactory.
@@ -88,7 +87,11 @@ public class ShipmentResource {
 		userDao = UserDaoFactory.getInstance().getUserDao();
 		System.out.println("Initial ShipmentDao.");
 	}
-	
+
+	/**
+	 * 
+	 * @return
+	 */
 	@GET
 	@Path("/auth")
 	public Response authenticate() {
@@ -97,13 +100,12 @@ public class ShipmentResource {
 					.authorizationProvider(OAuthProviderType.GOOGLE)
 					.setClientId(CLIENT_ID)
 					.setResponseType("code")
-					.setScope(
-							"email")
-					.setRedirectURI( UriBuilder.fromUri(uriInfo.getBaseUri())
-							.path("shipments/oauth2callback").build().toString()
-							)
-					.buildQueryMessage();
-			
+					.setScope("email")
+					.setRedirectURI(
+							UriBuilder.fromUri(uriInfo.getBaseUri())
+									.path("shipments/oauth2callback").build()
+									.toString()).buildQueryMessage();
+
 			URI redirect = new URI(request.getLocationUri());
 			return Response.seeOther(redirect).build();
 		} catch (OAuthSystemException e) {
@@ -113,6 +115,12 @@ public class ShipmentResource {
 		}
 	}
 
+	/**
+	 * 
+	 * @param code
+	 * @param state
+	 * @return
+	 */
 	@GET
 	@Path("/oauth2callback")
 	public Response authorize(@QueryParam("code") String code,
@@ -121,7 +129,7 @@ public class ShipmentResource {
 
 		String accessToken = "";
 		String email = "";
-		
+
 		try {
 			// Request to exchange code for access token and id token
 			request = OAuthClientRequest
@@ -129,42 +137,48 @@ public class ShipmentResource {
 					.setCode(code)
 					.setClientId(CLIENT_ID)
 					.setClientSecret(CLIENT_SECRET)
-					.setRedirectURI( UriBuilder.fromUri(uriInfo.getBaseUri())
-							.path("shipments/oauth2callback").build().toString()
-							)
+					.setRedirectURI(
+							UriBuilder.fromUri(uriInfo.getBaseUri())
+									.path("shipments/oauth2callback").build()
+									.toString())
 					.setGrantType(GrantType.AUTHORIZATION_CODE)
 					.buildBodyMessage();
-			
+
 			client = new OAuthClient(new URLConnectionClient());
-			response = client
-					.accessToken(request, OAuthTokenResponse.class);
-			
+			response = client.accessToken(request, OAuthTokenResponse.class);
+
 			// Get the access token from the response
-			accessToken = ((OAuthJSONAccessTokenResponse) response).getAccessToken();
-			
-			email = getEmail(((OAuthResourceResponse)getClientResource(accessToken)).getBody());
+			accessToken = ((OAuthJSONAccessTokenResponse) response)
+					.getAccessToken();
+
+			email = getEmail(((OAuthResourceResponse) getClientResource(accessToken))
+					.getBody());
 			User oldUser = userDao.findByEmail(email);
-			if(oldUser != null){
+			if (oldUser != null) {
 				oldUser.setAccessToken(accessToken);
 				userDao.update(oldUser);
-			}
-			else{
+			} else {
 				User user = new User();
 				user.setAccessToken(accessToken);
 				user.setEmail(email);
 				userDao.save(user);
 			}
-			
+
 			// Add code to notify application of authenticated user
 		} catch (OAuthProblemException | OAuthSystemException e) {
 			e.printStackTrace();
-		} 
+		}
 
 		final URI uri = uriInfo.getBaseUriBuilder().path(accessToken).build();
 
 		return Response.seeOther(uri).build();
 	}
-	
+
+	/**
+	 * 
+	 * @param accessToken
+	 * @return
+	 */
 	public OAuthClientResponse getClientResource(String accessToken) {
 		try {
 			request = new OAuthBearerClientRequest(
@@ -178,8 +192,13 @@ public class ShipmentResource {
 		return null;
 	}
 
+	/**
+	 * 
+	 * @param body
+	 * @return
+	 */
 	public String getEmail(String body) {
-		
+
 		Map<String, Object> params = new HashMap<String, Object>();
 		try {
 			JSONObject obj = new JSONObject(body);
@@ -207,25 +226,26 @@ public class ShipmentResource {
 	}
 
 	/**
-	 * Get a list of all shipment
+	 * Get all shipments
 	 * 
-	 * @param query
-	 *            is query string (title)
-	 * @return response 200 OK if result not null that show list of result
-	 *         shipment. If result is null response 404 NOT FOUND
+	 * @param request
+	 * @param accept
+	 * @param accessToken
+	 * @return
 	 */
 	@GET
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getShipments(@Context Request request,
-			@HeaderParam("Accept") String accept,@HeaderParam("Authorization") String accessToken) {
-		if(accessToken == null){
+			@HeaderParam("Accept") String accept,
+			@HeaderParam("Authorization") String accessToken) {
+		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 		User user = userDao.findByAccessToken(accessToken);
-		if(user != null){
+		if (user != null) {
 			GenericEntity<List<Shipment>> ge = null;
 			ge = convertListToGE(shipmentDao.findAll());
-	
+
 			if (!ge.getEntity().isEmpty()) {
 				// json
 				if (accept.equals(MediaType.APPLICATION_JSON)) {
@@ -255,27 +275,35 @@ public class ShipmentResource {
 	@Path("{id}")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getShipmentById(@PathParam("id") long id,
-			@Context Request request, @HeaderParam("Accept") String accept) {
-		Shipment shipment = shipmentDao.find(id);
-		if (shipment == null) {
-			return Response.status(Response.Status.NOT_FOUND).build();
+			@Context Request request, @HeaderParam("Accept") String accept,
+			@HeaderParam("Authorization") String accessToken) {
+		if (accessToken == null) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
-		EntityTag etag = attachEtag(shipment);
-		ResponseBuilder builder = request.evaluatePreconditions(etag);
-		if (builder == null) {
-			// json
-			if (accept.equals(MediaType.APPLICATION_JSON)) {
-				String response = convertXMLtoJSON(mashallXml(shipment));
-				builder = Response.ok(response, MediaType.APPLICATION_JSON);
+		User user = userDao.findByAccessToken(accessToken);
+		if (user != null) {
+			Shipment shipment = shipmentDao.find(id);
+			if (shipment == null) {
+				return Response.status(Response.Status.NOT_FOUND).build();
 			}
-			// xml
-			else {
-				builder = Response.ok(shipment);
+			EntityTag etag = attachEtag(shipment);
+			ResponseBuilder builder = request.evaluatePreconditions(etag);
+			if (builder == null) {
+				// json
+				if (accept.equals(MediaType.APPLICATION_JSON)) {
+					String response = convertXMLtoJSON(mashallXml(shipment));
+					builder = Response.ok(response, MediaType.APPLICATION_JSON);
+				}
+				// xml
+				else {
+					builder = Response.ok(shipment);
+				}
+				builder.tag(etag);
 			}
-			builder.tag(etag);
+			builder.cacheControl(cc);
+			return builder.build();
 		}
-		builder.cacheControl(cc);
-		return builder.build();
+		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}
 
 	/**
@@ -292,7 +320,7 @@ public class ShipmentResource {
 	public Response getStatusById(@PathParam("id") long id,
 			@Context Request request, @HeaderParam("Accept") String accept) {
 		Shipment shipment = shipmentDao.find(id);
-		
+
 		if (shipment == null) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
@@ -307,7 +335,7 @@ public class ShipmentResource {
 		status.setStatus_recieved_time(shipment.getStatus_recieved_time());
 		status.setTotal_weight(shipment.getTotal_weight());
 		status.setTotal_cost(shipment.getTotal_cost());
-		// json  
+		// json
 		if (accept.equals(MediaType.APPLICATION_JSON)) {
 			String response = convertXMLtoJSON(mashallXml(status));
 			return Response.ok(response, MediaType.APPLICATION_JSON).build();
@@ -334,24 +362,32 @@ public class ShipmentResource {
 	@Consumes(MediaType.APPLICATION_XML)
 	public Response putContact(@PathParam("id") long id,
 			JAXBElement<Shipment> element, @Context Request request,
-			@Context UriInfo uriInfo) {
-		Shipment newStatus = element.getValue();
-		if (!(newStatus.getId() == id)) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
+			@Context UriInfo uriInfo,
+			@HeaderParam("Authorization") String accessToken) {
+		if (accessToken == null) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
-		Shipment shipment = shipmentDao.find(id);
-		shipment.updateStatus(newStatus.getStatus());
-		EntityTag etag = attachEtag(shipment);
-		ResponseBuilder builder = request.evaluatePreconditions(etag);
-		if (builder == null) {
-			if (!shipmentDao.update(shipment)) {
-				return Response.status(Response.Status.NOT_FOUND).build();
+		User user = userDao.findByAccessToken(accessToken);
+		if (user != null) {
+			Shipment newStatus = element.getValue();
+			if (!(newStatus.getId() == id)) {
+				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
-			builder = Response.ok();
-			builder.tag(etag);
+			Shipment shipment = shipmentDao.find(id);
+			shipment.updateStatus(newStatus.getStatus());
+			EntityTag etag = attachEtag(shipment);
+			ResponseBuilder builder = request.evaluatePreconditions(etag);
+			if (builder == null) {
+				if (!shipmentDao.update(shipment)) {
+					return Response.status(Response.Status.NOT_FOUND).build();
+				}
+				builder = Response.ok();
+				builder.tag(etag);
+			}
+			builder.cacheControl(cc);
+			return builder.build();
 		}
-		builder.cacheControl(cc);
-		return builder.build();
+		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}
 
 	/**
@@ -365,19 +401,27 @@ public class ShipmentResource {
 	@DELETE
 	@Path("{id}")
 	public Response deleteShipment(@PathParam("id") long id,
-			@Context Request request) {
-		Shipment shipment = shipmentDao.find(id);
-		if (shipment == null) {
-			return Response.status(Response.Status.NOT_FOUND).build();
+			@Context Request request,
+			@HeaderParam("Authorization") String accessToken) {
+		if (accessToken == null) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
-		EntityTag etag = attachEtag(shipment);
-		ResponseBuilder builder = request.evaluatePreconditions(etag);
-		if (builder == null) {
-			shipmentDao.delete(id);
-			builder = Response.ok();
+		User user = userDao.findByAccessToken(accessToken);
+		if (user != null) {
+			Shipment shipment = shipmentDao.find(id);
+			if (shipment == null) {
+				return Response.status(Response.Status.NOT_FOUND).build();
+			}
+			EntityTag etag = attachEtag(shipment);
+			ResponseBuilder builder = request.evaluatePreconditions(etag);
+			if (builder == null) {
+				shipmentDao.delete(id);
+				builder = Response.ok();
+			}
+			builder.cacheControl(cc);
+			return builder.build();
 		}
-		builder.cacheControl(cc);
-		return builder.build();
+		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}
 
 	/**
@@ -394,29 +438,37 @@ public class ShipmentResource {
 	@POST
 	@Consumes({ MediaType.APPLICATION_XML })
 	public Response post(JAXBElement<Shipment> element,
-			@Context UriInfo uriInfo, @Context Request request) {
-		Shipment shipment = element.getValue();
-		shipment.setTotal_weight(shipment.calTotalWeight());
-		shipment.setTotal_cost(shipment.calCostByFreightRates(shipment
-				.getTotal_weight()));
-		shipment.updateStatus(Shipment.STATUS_CREATED);
-		shipment.setForeignKeyToItem();
-		if (shipmentDao.find(shipment.getId()) != null) {
-			return Response.status(Response.Status.CONFLICT).build();
+			@Context UriInfo uriInfo, @Context Request request,
+			@HeaderParam("Authorization") String accessToken) {
+		if (accessToken == null) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
-		EntityTag etag = attachEtag(shipment);
-		ResponseBuilder builder = request.evaluatePreconditions(etag);
-		if (builder == null) {
-			if (!shipmentDao.save(shipment)) {
-				return Response.status(Response.Status.BAD_REQUEST).build();
+		User user = userDao.findByAccessToken(accessToken);
+		if (user != null) {
+			Shipment shipment = element.getValue();
+			shipment.setTotal_weight(shipment.calTotalWeight());
+			shipment.setTotal_cost(shipment.calCostByFreightRates(shipment
+					.getTotal_weight()));
+			shipment.updateStatus(Shipment.STATUS_CREATED);
+			shipment.setForeignKeyToItem();
+			if (shipmentDao.find(shipment.getId()) != null) {
+				return Response.status(Response.Status.CONFLICT).build();
 			}
-			URI uri = uriInfo.getAbsolutePathBuilder()
-					.path(shipment.getId() + "").build();
-			builder = Response.created(uri);
-			builder.tag(etag);
+			EntityTag etag = attachEtag(shipment);
+			ResponseBuilder builder = request.evaluatePreconditions(etag);
+			if (builder == null) {
+				if (!shipmentDao.save(shipment)) {
+					return Response.status(Response.Status.BAD_REQUEST).build();
+				}
+				URI uri = uriInfo.getAbsolutePathBuilder()
+						.path(shipment.getId() + "").build();
+				builder = Response.created(uri);
+				builder.tag(etag);
+			}
+			builder.cacheControl(cc);
+			return builder.build();
 		}
-		builder.cacheControl(cc);
-		return builder.build();
+		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}
 
 	/**

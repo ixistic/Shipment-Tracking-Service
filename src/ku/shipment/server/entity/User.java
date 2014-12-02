@@ -18,7 +18,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "user")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class User implements Serializable{
-
+	private static final int TYPE_DELIVERY_PERSON = 1;
+	private static final int TYPE_CUSTOMER = 0;
 	private static final long serialVersionUID = 6979236188240217830L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -29,6 +30,7 @@ public class User implements Serializable{
 	private String email;
 	@Column(name = "accessToken")
 	private String accessToken;
+	//default 0 : customer
 	@Column(name = "type")
 	private int type;
 	
