@@ -75,8 +75,8 @@ public class ShipmentResource {
 	private OAuthClientRequest request;
 	private OAuthClientResponse response;
 
-	private final String CLIENT_ID = "229216041764-sjdasnqgvom7lcva4fni6nrcpid4fv7u.apps.googleusercontent.com";
-	private final String CLIENT_SECRET = "wD1SIj5DdJiO5d4qz7FVL0Ko";
+	private final String CLIENT_ID = "267002662830-4vdpuskha48mq3o2dvq1c3jihub9s49m.apps.googleusercontent.com";
+	private final String CLIENT_SECRET = "ZzhMn_mvuhjyL22E4T3Aa8jy";
 
 	/**
 	 * Construct ShipmentDao from DaoFactory.
@@ -171,7 +171,7 @@ public class ShipmentResource {
 		}
 
 		final URI uri = uriInfo.getBaseUriBuilder()
-				.path("shipments/" + accessToken).build();
+				.path("shipments/access/" + accessToken).build();
 
 		return Response.seeOther(uri).build();
 	}
@@ -182,7 +182,7 @@ public class ShipmentResource {
 	 * @return
 	 */
 	@GET
-	@Path("{accessToken}")
+	@Path("access/{accessToken}")
 	public Response getAccessToken(@PathParam("accessToken") String token) {
 		URI uri = null;
 		try {
@@ -271,7 +271,6 @@ public class ShipmentResource {
 			ge = convertListToGE(shipmentDao.findAll());
 
 			if (!ge.getEntity().isEmpty()) {
-				System.out.println("GET ALL");
 				// xml
 				if (accept.equals(MediaType.APPLICATION_XML)) {
 					return Response.ok(ge).build();
@@ -403,9 +402,11 @@ public class ShipmentResource {
 		User user = userDao.findByAccessToken(accessToken);
 		if (user != null) {
 			Shipment newStatus = element.getValue();
-			if (!(newStatus.getId() == id)) {
-				return Response.status(Response.Status.BAD_REQUEST).build();
-			}
+			System.out.println(newStatus.getId());
+			System.out.println(id);
+//			if (!(newStatus.getId() == id)) {
+//				return Response.status(Response.Status.BAD_REQUEST).build();
+//			}
 			Shipment shipment = shipmentDao.find(id);
 			shipment.updateStatus(newStatus.getStatus());
 			EntityTag etag = attachEtag(shipment);
