@@ -6,7 +6,7 @@ import java.util.EnumSet;
 
 import javax.servlet.DispatcherType;
 
-import ku.shipment.server.resource.CORSResponseFilter;
+import ku.shipment.server.filter.CORSResponseFilter;
 import ku.shipment.server.service.ShipmentDaoFactory;
 
 import org.eclipse.jetty.server.Server;

@@ -306,22 +306,16 @@ public class ShipmentResource {
 			if (shipment == null) {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
-			EntityTag etag = attachEtag(shipment);
-			ResponseBuilder builder = request.evaluatePreconditions(etag);
-			if (builder == null) {
-				// json
-				if (accept.equals(MediaType.APPLICATION_JSON)) {
-					String response = convertXMLtoJSON(mashallXml(shipment));
-					builder = Response.ok(response, MediaType.APPLICATION_JSON);
-				}
-				// xml
-				else {
-					builder = Response.ok(shipment);
-				}
-				builder.tag(etag);
+			// json
+			if (accept.equals(MediaType.APPLICATION_JSON)) {
+				String response = convertXMLtoJSON(mashallXml(shipment));
+				return Response.ok(response, MediaType.APPLICATION_JSON)
+						.build();
 			}
-			builder.cacheControl(cc);
-			return builder.build();
+			// xml
+			else {
+				return Response.ok(shipment).build();
+			}
 		}
 		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}
@@ -390,24 +384,18 @@ public class ShipmentResource {
 		User user = userDao.findByAccessToken(accessToken);
 		if (user != null) {
 			Shipment newStatus = element.getValue();
-			System.out.println(newStatus.getId());
-			System.out.println(id);
-			// if (!(newStatus.getId() == id)) {
-			// return Response.status(Response.Status.BAD_REQUEST).build();
-			// }
+			// System.out.println(newStatus.getId());
+			// System.out.println(id);
+			if (!(newStatus.getId() == id)) {
+				return Response.status(Response.Status.BAD_REQUEST).build();
+			}
 			Shipment shipment = shipmentDao.find(id);
 			shipment.updateStatus(newStatus.getStatus());
-			EntityTag etag = attachEtag(shipment);
-			ResponseBuilder builder = request.evaluatePreconditions(etag);
-			if (builder == null) {
-				if (!shipmentDao.update(shipment)) {
-					return Response.status(Response.Status.NOT_FOUND).build();
-				}
-				builder = Response.ok();
-				builder.tag(etag);
+			if (!shipmentDao.update(shipment)) {
+				return Response.status(Response.Status.NOT_FOUND).build();
 			}
-			builder.cacheControl(cc);
-			return builder.build();
+			return Response.ok().build();
+
 		}
 		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}
@@ -434,14 +422,9 @@ public class ShipmentResource {
 			if (shipment == null) {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
-			EntityTag etag = attachEtag(shipment);
-			ResponseBuilder builder = request.evaluatePreconditions(etag);
-			if (builder == null) {
-				shipmentDao.delete(id);
-				builder = Response.ok();
-			}
-			builder.cacheControl(cc);
-			return builder.build();
+			shipmentDao.delete(id);
+			return Response.ok().build();
+
 		}
 		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}
@@ -476,19 +459,12 @@ public class ShipmentResource {
 			if (shipmentDao.find(shipment.getId()) != null) {
 				return Response.status(Response.Status.CONFLICT).build();
 			}
-			EntityTag etag = attachEtag(shipment);
-			ResponseBuilder builder = request.evaluatePreconditions(etag);
-			if (builder == null) {
-				if (!shipmentDao.save(shipment)) {
-					return Response.status(Response.Status.BAD_REQUEST).build();
-				}
-				URI uri = uriInfo.getAbsolutePathBuilder()
-						.path(shipment.getId() + "").build();
-				builder = Response.created(uri);
-				builder.tag(etag);
+			if (!shipmentDao.save(shipment)) {
+				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
-			builder.cacheControl(cc);
-			return builder.build();
+			URI uri = uriInfo.getAbsolutePathBuilder()
+					.path(shipment.getId() + "").build();
+			return Response.created(uri).build();
 		}
 		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}

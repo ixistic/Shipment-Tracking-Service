@@ -1,4 +1,4 @@
-package ku.shipment.server.resource;
+package ku.shipment.server.filter;
 
 import java.io.IOException;
 
