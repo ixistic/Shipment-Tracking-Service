@@ -74,7 +74,7 @@ Shipment tracking system is used for the shipping and the observing of product o
 
     - <i>Authenticate Not Required</i>
     ```
-  	GET /shipments/calculate 
+  	POST /shipments/calculate 
     ```
 	* <b>Reciever</b>
 
