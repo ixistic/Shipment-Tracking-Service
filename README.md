@@ -71,32 +71,37 @@ Shipment tracking system is used for the shipping and the observing of product o
   ```
 
 * Customer
-    ```
     <i>Authenticate Not Required</i>
+    ```
   	GET /shipments/calculate 
     ```
 	* Reciever
-    ```
     <i>Authenticate Not Required</i>
+    ```
     GET /shipments/{id} 
     ```
 	* Courier
-    ```
     <i>Authenticate Not Required</i>
+    ```
     GET /shipments/{id}
+    ```
     <i>Authenticate Required</i>
+    ```
     GET /shipments 
     POST /shipments
     DELETE /shipments/{id}
     ```
 * Delivery Person
-
-    ```
     <i>Authenticate Not Required</i>
+    ```
     GET /shipments/{id}
+    ```
     <i>Authenticate Required</i>
+    ```
     GET /shipments 
-    <i>Authenticate Required user's type : 1 (admin only)</i>
+    ```
+    <i>Authenticate Required (user's type : 1)</i>
+    ```
     PUT /shipments/{id} 
     ```
 
