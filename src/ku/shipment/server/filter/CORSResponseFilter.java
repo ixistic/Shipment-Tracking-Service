@@ -28,7 +28,6 @@ implements Filter  {
 				"POST, PUT, GET, DELETE");
 		response.setHeader("Access-Control-Allow-Headers",
 				"Content-Type , Accept, Authorization");
-
 		fc.doFilter(req, res);
 		
 	}

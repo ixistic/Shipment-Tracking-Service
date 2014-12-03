@@ -35,7 +35,7 @@ public class Shipment implements Serializable {
 	public static final String STATUS_CREATED = "created";
 	public static final String STATUS_PACKED = "packed";
 	public static final String STATUS_SENDING = "sending";
-	public static final String STATUS_RECIEVED = "recieved";
+	public static final String STATUS_RECEIVED = "received";
 	private static final long serialVersionUID = 3645343276027601559L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -227,7 +227,7 @@ public class Shipment implements Serializable {
 		} else if (this.status.equals(STATUS_PACKED)) {
 			setStatus_packed_time(new Date());
 			return true;
-		} else if (this.status.equals(STATUS_RECIEVED)) {
+		} else if (this.status.equals(STATUS_RECEIVED)) {
 			setStatus_recieved_time(new Date());
 			return true;
 		} else if (this.status.equals(STATUS_SENDING)) {

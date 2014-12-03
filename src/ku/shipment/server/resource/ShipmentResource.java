@@ -75,8 +75,8 @@ public class ShipmentResource {
 	private OAuthClientRequest request;
 	private OAuthClientResponse response;
 
-	private final String CLIENT_ID = "267002662830-4vdpuskha48mq3o2dvq1c3jihub9s49m.apps.googleusercontent.com";
-	private final String CLIENT_SECRET = "ZzhMn_mvuhjyL22E4T3Aa8jy";
+	private final String CLIENT_ID = "229216041764-sjdasnqgvom7lcva4fni6nrcpid4fv7u.apps.googleusercontent.com";
+	private final String CLIENT_SECRET = "wD1SIj5DdJiO5d4qz7FVL0Ko";
 
 	/**
 	 * Construct ShipmentDao from DaoFactory.
@@ -186,7 +186,7 @@ public class ShipmentResource {
 	public Response getAccessToken(@PathParam("accessToken") String token) {
 		URI uri = null;
 		try {
-			uri = new URI("http://158.108.139.141/web/index.php?accessToken="
+			uri = new URI("http://aunsuwijak.tk/web/index.php?accessToken="
 					+ token);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
@@ -258,6 +258,9 @@ public class ShipmentResource {
 	public Response getShipments(@Context Request request,
 			@HeaderParam("Accept") String accept,
 			@HeaderParam("Authorization") String accessToken) {
+		if(accept == null){
+			accept = MediaType.APPLICATION_XML;
+		}
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -297,6 +300,9 @@ public class ShipmentResource {
 	public Response getShipmentById(@PathParam("id") long id,
 			@Context Request request, @HeaderParam("Accept") String accept,
 			@HeaderParam("Authorization") String accessToken) {
+		if(accept == null){
+			accept = MediaType.APPLICATION_XML;
+		}
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -333,8 +339,10 @@ public class ShipmentResource {
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getStatusById(@PathParam("id") long id,
 			@Context Request request, @HeaderParam("Accept") String accept) {
+		if(accept == null){
+			accept = MediaType.APPLICATION_XML;
+		}
 		Shipment shipment = shipmentDao.find(id);
-
 		if (shipment == null) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
@@ -384,9 +392,9 @@ public class ShipmentResource {
 			Shipment newStatus = element.getValue();
 			// System.out.println(newStatus.getId());
 			// System.out.println(id);
-			if (!(newStatus.getId() == id)) {
-				return Response.status(Response.Status.BAD_REQUEST).build();
-			}
+//			if (!(newStatus.getId() == id)) {
+//				return Response.status(Response.Status.BAD_REQUEST).build();
+//			}
 			Shipment shipment = shipmentDao.find(id);
 			shipment.updateStatus(newStatus.getStatus());
 			if (!shipmentDao.update(shipment)) {
@@ -457,6 +465,7 @@ public class ShipmentResource {
 			if (shipmentDao.find(shipment.getId()) != null) {
 				return Response.status(Response.Status.CONFLICT).build();
 			}
+			System.out.println(shipment.getId());
 			if (!shipmentDao.save(shipment)) {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
