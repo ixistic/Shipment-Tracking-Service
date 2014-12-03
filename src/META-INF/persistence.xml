@@ -14,7 +14,7 @@
 		<class>ku.shipment.server.entity.User</class>
 		<!-- describe the database for JPA -->
 		<properties>
-			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:8889/shipment_service" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/shipment_service" />
 			<property name="javax.persistence.jdbc.user" value="root" />
 			<property name="javax.persistence.jdbc.password" value="root" />
 			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />

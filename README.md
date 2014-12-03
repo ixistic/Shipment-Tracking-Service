@@ -82,6 +82,7 @@ Shipment tracking system is used for the shipping and the observing of product o
     ```
     GET /shipments/{id}/status
     ```
+    Example : [Demo](http://track-trace.tk:8080/shipments/2/status)
 	* <b>Courier</b>
 
     - <i>Authenticate Required</i>
