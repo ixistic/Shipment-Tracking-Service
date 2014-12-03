@@ -76,13 +76,13 @@ Shipment tracking system is used for the shipping and the observing of product o
     ```
   	GET /shipments/calculate 
     ```
-	* Reciever
+	* <b>Reciever</b>
 
     - <i>Authenticate Not Required</i>
     ```
     GET /shipments/{id} 
     ```
-	* Courier
+	* <b>Courier</b>
 
     - <i>Authenticate Not Required</i>
     ```
