@@ -110,6 +110,7 @@ Shipment tracking system is used for the shipping and the observing of product o
 
 ## Software Design
 * Sequence Diagram (Web client) : [Link](https://docs.google.com/drawings/d/1c0_B0CL5km4ttUjANvumr18zXrdh5E2BGpbB5BKmH_8/edit)
+* Sequence Diagram (Android client) : [Link](https://docs.google.com/drawings/d/1sRsJNigXH5XZT1Ea7S8Hb4E3MnwS15iSESR_5rxGKvY/edit)
 
 ## Installation 
 * <i>comming soon</i>
