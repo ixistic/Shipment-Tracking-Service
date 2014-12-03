@@ -108,6 +108,9 @@ Shipment tracking system is used for the shipping and the observing of product o
 
 * See it in [API wiki](https://github.com/ixistic/Shipment-Tracking-Service/wiki/API-Specification-Document)
 
+## Software Design
+* Sequence Diagram (Web client) : [Link](https://docs.google.com/drawings/d/1c0_B0CL5km4ttUjANvumr18zXrdh5E2BGpbB5BKmH_8/edit)
+
 ## Installation 
 * <i>comming soon</i>
 
