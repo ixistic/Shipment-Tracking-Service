@@ -64,13 +64,13 @@ Shipment tracking system is used for the shipping and the observing of product o
 <b>Main Success Scenario</b> : A delivery person change the shipment's status after he open the web site. Then the status will be updated ,and application notify the delivery person.
 
 ## Functions
-* OAuth Request
+* <b>OAuth Request</b>
   ```
   GET /shipments/auth 
   GET /shipments/oauth2callback
   ```
 
-* Customer
+* <b>Customer</b>
 
     - <i>Authenticate Not Required</i>
     ```
@@ -92,7 +92,7 @@ Shipment tracking system is used for the shipping and the observing of product o
     POST /shipments
     DELETE /shipments/{id}
     ```
-* Delivery Person
+* <b>Delivery Person</b>
 
     - <i>Authenticate Required</i>
     ```
