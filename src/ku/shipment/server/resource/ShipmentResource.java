@@ -257,11 +257,7 @@ public class ShipmentResource {
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getShipments(@Context Request request,
 			@HeaderParam("Accept") String accept,
-			@HeaderParam("Authorization") String accessToken,
-			@QueryParam("auth_key") String auth) {
-		if (auth != null) {
-			accessToken = auth;
-		}
+			@HeaderParam("Authorization") String accessToken) {
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -300,11 +296,7 @@ public class ShipmentResource {
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getShipmentById(@PathParam("id") long id,
 			@Context Request request, @HeaderParam("Accept") String accept,
-			@HeaderParam("Authorization") String accessToken,
-			@QueryParam("auth_key") String auth) {
-		if (auth != null) {
-			accessToken = auth;
-		}
+			@HeaderParam("Authorization") String accessToken) {
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -391,11 +383,7 @@ public class ShipmentResource {
 	public Response putContact(@PathParam("id") long id,
 			JAXBElement<Shipment> element, @Context Request request,
 			@Context UriInfo uriInfo,
-			@HeaderParam("Authorization") String accessToken,
-			@QueryParam("auth_key") String auth) {
-		if (auth != null) {
-			accessToken = auth;
-		}
+			@HeaderParam("Authorization") String accessToken) {
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -404,9 +392,9 @@ public class ShipmentResource {
 			Shipment newStatus = element.getValue();
 			System.out.println(newStatus.getId());
 			System.out.println(id);
-//			if (!(newStatus.getId() == id)) {
-//				return Response.status(Response.Status.BAD_REQUEST).build();
-//			}
+			// if (!(newStatus.getId() == id)) {
+			// return Response.status(Response.Status.BAD_REQUEST).build();
+			// }
 			Shipment shipment = shipmentDao.find(id);
 			shipment.updateStatus(newStatus.getStatus());
 			EntityTag etag = attachEtag(shipment);
@@ -436,11 +424,7 @@ public class ShipmentResource {
 	@Path("{id}")
 	public Response deleteShipment(@PathParam("id") long id,
 			@Context Request request,
-			@HeaderParam("Authorization") String accessToken,
-			@QueryParam("auth_key") String auth) {
-		if (auth != null) {
-			accessToken = auth;
-		}
+			@HeaderParam("Authorization") String accessToken) {
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -477,11 +461,7 @@ public class ShipmentResource {
 	@Consumes({ MediaType.APPLICATION_XML })
 	public Response post(JAXBElement<Shipment> element,
 			@Context UriInfo uriInfo, @Context Request request,
-			@HeaderParam("Authorization") String accessToken,
-			@QueryParam("auth_key") String auth) {
-		if (auth != null) {
-			accessToken = auth;
-		}
+			@HeaderParam("Authorization") String accessToken) {
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}

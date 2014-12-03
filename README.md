@@ -1,15 +1,15 @@
 # Shipment Tracking Service
 
-Shipment tracking system is used for the shipping and the observing of product order on the move that can manage order on the network for real time.
+Shipment tracking system is used for the shipping and the observing of product order on the move that can manage order on the network.
 
 ## Features
 * Online Shipment
 * Online Track Shipment
 * Android Application
-* Web Application (use AngularJS)
+* Web Application
 * OAuth Authentication
 
-## Use Story
+## User Story
 *   Customer
     * Reciever : ( Android Application )
         -  <i>Authenticate Not Required</i>
@@ -19,30 +19,30 @@ Shipment tracking system is used for the shipping and the observing of product o
     * Courier : ( Android Application )
         - <i>Authenticate Required</i>
         ```
-          I can create shipment
-          I can check all the shipment that I create
-          I can cancel shipment
+          I can create shipment.
+          I can check all the shipments that I create.
+          I can cancel shipment.
         ```
         - <i>Authenticate Not Required</i>
         ```
           I can check shipment status using shipment number.
-          I can check the shipment cost by sending item information
+          I can check the shipment's cost by sending item information.
         ```
 * Delivery Person : ( Web Application ) 
     -   <i>Authenticate Required</i>
     ```
-      I can edit shipment status
+      I can edit shipment's status.
     ```
 
 
 ## Use Cases
 ####Use Case Number : 1
-<b>Use Case Name</b> : Reciever and  Courier check shipment status.<br>
-<b>Main Success Scenario</b> : A reciever and courier check shipment status by using number of shipment after they sign in application with their ID. Then the application shows the shipment status.<br>
+<b>Use Case Name</b> : Reciever and  Courier check shipment's status.<br>
+<b>Main Success Scenario</b> : A reciever and courier check shipment's status by using number of shipment after they sign in application with their ID. Then the application shows the shipment's status.<br>
 <b>Exception</b> : They didn't fill shipment's number in form or shipment's number doesn't exist. The application will notify them.
 
 ####Use Case Number : 2
-<b>Use Case Name</b> : Courier and Delivery person check all shipment.<br>
+<b>Use Case Name</b> : Courier and Delivery person check all shipments.<br>
 <b>Main Success Scenario</b> : A courier and deliver person sign in and they can see all shipment after courier created the shipment.
 
 ####Use Case Number : 3
@@ -60,42 +60,52 @@ Shipment tracking system is used for the shipping and the observing of product o
 <b>Exception</b> : A courier check the shipment's cost with incomplete information then the application notify him.
 
 ####Use Case Number : 6
-<b>Use Case Name</b> : Delivery person edit shipment status.<br>
+<b>Use Case Name</b> : Delivery person edit shipment's status.<br>
 <b>Main Success Scenario</b> : A delivery person change the shipment's status after he open the web site. Then the status will be updated ,and application notify the delivery person.
 
 ## Functions
 * OAuth Request
   ```
-  /google 
-  /oauth2callback
+  GET /shipments/auth 
+  GET /shipments/oauth2callback
   ```
 
 * Customer
     ```
-  	/shipments/calculate GET
+    <i>Authenticate Not Required</i>
+  	GET /shipments/calculate 
     ```
 	* Reciever
     ```
-    /shipments/{id} GET
+    <i>Authenticate Not Required</i>
+    GET /shipments/{id} 
     ```
 	* Courier
     ```
-    /shipments GET
-    /shipments/{id} GET, POST, DELETE
+    <i>Authenticate Not Required</i>
+    GET /shipments/{id}
+    <i>Authenticate Required</i>
+    GET /shipments 
+    POST /shipments
+    DELETE /shipments/{id}
     ```
 * Delivery Person
 
     ```
-    /shipments GET
-    /shipments/{id} GET, PUT
+    <i>Authenticate Not Required</i>
+    GET /shipments/{id}
+    <i>Authenticate Required</i>
+    GET /shipments 
+    <i>Authenticate Required user's type : 1 (admin only)</i>
+    PUT /shipments/{id} 
     ```
 
 ## API Specification Document
 
 * See it in [API wiki](https://github.com/ixistic/Shipment-Tracking-Service/wiki/API-Specification-Document)
 
-## Software Design
-<i>coming soon</i>
+## Installation 
+* <i>comming soon</i>
 
 ## Requirements
 
