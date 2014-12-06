@@ -24,11 +24,9 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.GenericEntity;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBContext;
@@ -75,8 +73,8 @@ public class ShipmentResource {
 	private OAuthClientRequest request;
 	private OAuthClientResponse response;
 
-	private final String CLIENT_ID = "229216041764-sjdasnqgvom7lcva4fni6nrcpid4fv7u.apps.googleusercontent.com";
-	private final String CLIENT_SECRET = "wD1SIj5DdJiO5d4qz7FVL0Ko";
+	private final String CLIENT_ID = "267002662830-4vdpuskha48mq3o2dvq1c3jihub9s49m.apps.googleusercontent.com";
+	private final String CLIENT_SECRET = "ZzhMn_mvuhjyL22E4T3Aa8jy";
 
 	/**
 	 * Construct ShipmentDao from DaoFactory.
@@ -183,10 +181,12 @@ public class ShipmentResource {
 	 */
 	@GET
 	@Path("access/{accessToken}")
-	public Response getAccessToken(@PathParam("accessToken") String token) {
+	public Response getAccessToken(@HeaderParam("Host") String host,@PathParam("accessToken") String token) {
+		int portlen = host.indexOf(":");
+		host = host.substring(0, portlen);
 		URI uri = null;
 		try {
-			uri = new URI("http://aunsuwijak.tk/web/index.php?accessToken="
+			uri = new URI("http://" + host + "/access.php?accessToken="
 					+ token);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();

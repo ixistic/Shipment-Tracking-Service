@@ -60,9 +60,9 @@ public class JettyMain {
 		server.setHandler(context);
 		System.out.println("Starting Jetty server on port ");
 		server.start();
-//		return server.getURI().toString();
+		return server.getURI().toString();
 		//	Error because ku-win network 
-		return "http://localhost:"+port+"/";
+//		return "http://localhost:"+port+"/";
 	}
 
 	/**
