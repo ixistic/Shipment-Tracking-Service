@@ -218,6 +218,7 @@ public class ShipmentResource {
 		host = host.substring(0, portlen);
 		URI uri = null;
 		try {
+			// if ( host.equals("web-url") ) host + "index.php"
 			uri = new URI("http://" + host + "/access.php?accessToken="
 					+ token);
 		} catch (URISyntaxException e) {
