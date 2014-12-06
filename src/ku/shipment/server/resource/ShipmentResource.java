@@ -1,8 +1,11 @@
 package ku.shipment.server.resource;
 
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -42,6 +45,7 @@ import ku.shipment.server.service.ShipmentDao;
 import ku.shipment.server.service.ShipmentDaoFactory;
 import ku.shipment.server.service.UserDao;
 import ku.shipment.server.service.UserDaoFactory;
+import ku.shipment.server.service.BCrypt;
 
 import org.apache.oltu.oauth2.client.OAuthClient;
 import org.apache.oltu.oauth2.client.URLConnectionClient;
@@ -149,9 +153,37 @@ public class ShipmentResource {
 			// Get the access token from the response
 			accessToken = ((OAuthJSONAccessTokenResponse) response)
 					.getAccessToken();
-
+			
 			email = getEmail(((OAuthResourceResponse) getClientResource(accessToken))
 					.getBody());
+			
+			// BCrypt
+			String salt = BCrypt.gensalt(12);
+			String hashed_password = BCrypt.hashpw(accessToken, salt);
+			
+			System.out.println(hashed_password);
+			
+			// MD5
+			MessageDigest md = null;
+			try {
+				md = MessageDigest.getInstance("MD5");
+				md.reset();
+				try {
+					md.update( accessToken.getBytes("UTF-8") );
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				byte[] digest = md.digest();
+				
+				StringBuffer sb = new StringBuffer();
+				for(byte b : digest){
+		               sb.append(String.format("%02x", b&0xff));
+		           }
+				System.out.println(sb.toString());
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			}
+			
 			User oldUser = userDao.findByEmail(email);
 			if (oldUser != null) {
 				oldUser.setAccessToken(accessToken);
