@@ -14,7 +14,7 @@ Shipment tracking system is used for the shipping and the observing of product o
     * Reciever : ( Android Application )
         -  <i>Authenticate Not Required</i>
         ```
-          I can check shipment status using shipment number.
+          I can check shipment status.
         ```
     * Courier : ( Android Application )
         - <i>Authenticate Required</i>
@@ -25,8 +25,8 @@ Shipment tracking system is used for the shipping and the observing of product o
         ```
         - <i>Authenticate Not Required</i>
         ```
-          I can check shipment status using shipment number.
-          I can check the shipment's cost by sending item information.
+          I can check shipment status.
+          I can check the shipment's cost.
         ```
 * Delivery Person : ( Web Application ) 
     -   <i>Authenticate Required</i>
