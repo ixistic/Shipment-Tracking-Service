@@ -152,38 +152,38 @@ public class ShipmentResource {
 			// Get the access token from the response
 			accessToken = ((OAuthJSONAccessTokenResponse) response)
 					.getAccessToken();
-			
+
 			email = getEmail(((OAuthResourceResponse) getClientResource(accessToken))
 					.getBody());
-			
-//			// BCrypt
-//			String salt = BCrypt.gensalt(12);
-//			String hashed_password = BCrypt.hashpw(accessToken, salt);
-			
-//			System.out.println(hashed_password);
-			
+
+			// // BCrypt
+			// String salt = BCrypt.gensalt(12);
+			// String hashed_password = BCrypt.hashpw(accessToken, salt);
+
+			// System.out.println(hashed_password);
+
 			// MD5
 			MessageDigest md = null;
 			try {
 				md = MessageDigest.getInstance("MD5");
 				md.reset();
 				try {
-					md.update( accessToken.getBytes("UTF-8") );
+					md.update(accessToken.getBytes("UTF-8"));
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
 				byte[] digest = md.digest();
-				
+
 				StringBuffer sb = new StringBuffer();
-				for(byte b : digest){
-		               sb.append(String.format("%02x", b&0xff));
-		           }
+				for (byte b : digest) {
+					sb.append(String.format("%02x", b & 0xff));
+				}
 				accessToken = sb.toString();
 				System.out.println(sb.toString());
 			} catch (NoSuchAlgorithmException e) {
 				e.printStackTrace();
 			}
-			
+
 			User oldUser = userDao.findByEmail(email);
 			if (oldUser != null) {
 				oldUser.setAccessToken(accessToken);
@@ -213,16 +213,17 @@ public class ShipmentResource {
 	 */
 	@GET
 	@Path("access/{accessToken}")
-	public Response getAccessToken(@HeaderParam("Host") String host,@PathParam("accessToken") String token) {
+	public Response getAccessToken(@HeaderParam("Host") String host,
+			@PathParam("accessToken") String token) {
 		int portlen = host.indexOf(":");
 		host = host.substring(0, portlen);
 		URI uri = null;
 		try {
 			// if ( host.equals("web-url") ) host + "index.php"
-//			uri = new URI("http://" + host + "/index.php?accessToken="
-//					+ token);
-			uri = new URI("http://" + host + ":7777/web-admin/index.php?accessToken="
-					+ token);
+			// uri = new URI("http://" + host + "/index.php?accessToken="
+			// + token);
+			uri = new URI("http://" + host
+					+ ":7777/web-admin/index.php?accessToken=" + token);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
@@ -293,7 +294,7 @@ public class ShipmentResource {
 	public Response getShipments(@Context Request request,
 			@HeaderParam("Accept") String accept,
 			@HeaderParam("Authorization") String accessToken) {
-		if(accept == null){
+		if (accept == null) {
 			accept = MediaType.APPLICATION_XML;
 		}
 		if (accessToken == null) {
@@ -302,7 +303,16 @@ public class ShipmentResource {
 		User user = userDao.findByAccessToken(accessToken);
 		if (user != null) {
 			GenericEntity<List<Shipment>> ge = null;
-			ge = convertListToGE(shipmentDao.findAll());
+			List<Shipment> shipments = null;
+			// admin user
+			if (user.getType() == user.TYPE_DELIVERY_PERSON) {
+				shipments = shipmentDao.findAll();
+			}
+			// normal user
+			else {
+				shipments = user.getShipment();
+			}
+			ge = convertListToGE(shipments);
 
 			if (!ge.getEntity().isEmpty()) {
 				// xml
@@ -311,7 +321,7 @@ public class ShipmentResource {
 				}
 				// default json
 				Shipments shipment = new Shipments();
-				shipment.setShipments(shipmentDao.findAll());
+				shipment.setShipments(shipments);
 				String response = convertXMLtoJSON(mashallXml(shipment));
 				return Response.ok(response, MediaType.APPLICATION_JSON)
 						.build();
@@ -335,7 +345,7 @@ public class ShipmentResource {
 	public Response getShipmentById(@PathParam("id") long id,
 			@Context Request request, @HeaderParam("Accept") String accept,
 			@HeaderParam("Authorization") String accessToken) {
-		if(accept == null){
+		if (accept == null) {
 			accept = MediaType.APPLICATION_XML;
 		}
 		if (accessToken == null) {
@@ -343,7 +353,16 @@ public class ShipmentResource {
 		}
 		User user = userDao.findByAccessToken(accessToken);
 		if (user != null) {
-			Shipment shipment = shipmentDao.find(id);
+			Shipment shipment = null;
+			shipment = shipmentDao.find(id);
+			// normal user
+			if (!(user.getType() == user.TYPE_DELIVERY_PERSON)) {
+				if (!shipment.getUser().equals(user)) {
+					return Response.status(Response.Status.UNAUTHORIZED)
+							.build();
+				}
+				// shipment = shipmentDao.findByUserAndId(user, id);
+			}
 			if (shipment == null) {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
@@ -374,7 +393,7 @@ public class ShipmentResource {
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getStatusById(@PathParam("id") long id,
 			@Context Request request, @HeaderParam("Accept") String accept) {
-		if(accept == null){
+		if (accept == null) {
 			accept = MediaType.APPLICATION_XML;
 		}
 		Shipment shipment = shipmentDao.find(id);
@@ -383,8 +402,8 @@ public class ShipmentResource {
 		}
 		Shipment status = new Shipment();
 		status.setId(shipment.getId());
-		status.setRecieve_name(shipment.getRecieve_name());
-		status.setRecieve_address(shipment.getRecieve_address());
+		status.setReceive_name(shipment.getReceive_name());
+		status.setReceive_address(shipment.getReceive_address());
 		status.setStatus(shipment.getStatus());
 		status.setStatus_created_time(shipment.getStatus_created_time());
 		status.setStatus_packed_time(shipment.getStatus_packed_time());
@@ -425,13 +444,15 @@ public class ShipmentResource {
 		User user = userDao.findByAccessToken(accessToken);
 		if (user != null) {
 			Shipment newStatus = element.getValue();
-			// System.out.println(newStatus.getId());
-			// System.out.println(id);
-//			if (!(newStatus.getId() == id)) {
-//				return Response.status(Response.Status.BAD_REQUEST).build();
-//			}
 			Shipment shipment = shipmentDao.find(id);
 			shipment.updateStatus(newStatus.getStatus());
+			// normal user
+			if (!(user.getType() == user.TYPE_DELIVERY_PERSON)) {
+				if (shipment.getUser().equals(user)) {
+					return Response.status(Response.Status.UNAUTHORIZED)
+							.build();
+				}
+			}
 			if (!shipmentDao.update(shipment)) {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
@@ -460,6 +481,13 @@ public class ShipmentResource {
 		User user = userDao.findByAccessToken(accessToken);
 		if (user != null) {
 			Shipment shipment = shipmentDao.find(id);
+			// normal user
+			if (!(user.getType() == user.TYPE_DELIVERY_PERSON)) {
+				if (shipment.getUser().equals(user)) {
+					return Response.status(Response.Status.UNAUTHORIZED)
+							.build();
+				}
+			}
 			if (shipment == null) {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}

@@ -68,10 +68,10 @@ public class Shipment implements Serializable {
 	private String courier_name;
 	@Column(name = "courier_address")
 	private String courier_address;
-	@Column(name = "recieve_name")
-	private String recieve_name;
-	@Column(name = "recieve_address")
-	private String recieve_address;
+	@Column(name = "receive_name")
+	private String receive_name;
+	@Column(name = "receive_address")
+	private String receive_address;
 	@Column(name = "total_weight")
 	private float total_weight;
 	@Column(name = "total_cost")
@@ -163,20 +163,20 @@ public class Shipment implements Serializable {
 		this.courier_address = courier_address;
 	}
 
-	public String getRecieve_name() {
-		return recieve_name;
+	public String getReceive_name() {
+		return receive_name;
 	}
 
-	public void setRecieve_name(String recieve_name) {
-		this.recieve_name = recieve_name;
+	public void setReceive_name(String receive_name) {
+		this.receive_name = receive_name;
 	}
 
-	public String getRecieve_address() {
-		return recieve_address;
+	public String getReceive_address() {
+		return receive_address;
 	}
 
-	public void setRecieve_address(String recieve_address) {
-		this.recieve_address = recieve_address;
+	public void setReceive_address(String receive_address) {
+		this.receive_address = receive_address;
 	}
 
 	public float getTotal_cost() {
@@ -261,8 +261,8 @@ public class Shipment implements Serializable {
 	public boolean equals(Object other) {
 		if (other == null || other.getClass() != this.getClass())
 			return false;
-		Shipment product = (Shipment) other;
-		return product.getId() == this.getId();
+		Shipment shipment = (Shipment) other;
+		return shipment.getId() == this.getId();
 	}
 
 	/**

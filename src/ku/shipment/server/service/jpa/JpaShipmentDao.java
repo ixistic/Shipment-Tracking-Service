@@ -11,6 +11,7 @@ import javax.persistence.Query;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 import ku.shipment.server.entity.Shipment;
+import ku.shipment.server.entity.User;
 import ku.shipment.server.service.ShipmentDao;
 
 public class JpaShipmentDao implements ShipmentDao {
@@ -47,18 +48,17 @@ public class JpaShipmentDao implements ShipmentDao {
 		List<Shipment> shipments = Lists.newArrayList(query.getResultList());
 		return Collections.unmodifiableList(shipments);
 	}
-
+	
 	@Override
-	public List<Shipment> findByTitle(String titlestr) {
-		// LIKE does string match using patterns.
+	public Shipment findByUserAndId(User user,long id) {
 		Query query = em
-				.createQuery("select c from Shipment c where LOWER(c.title) LIKE :title");
-		// % is wildcard that matches anything
-		query.setParameter("title", "%" + titlestr.toLowerCase() + "%");
-		// now why bother to copy one list to another list?
-		java.util.List<Shipment> result = Lists.newArrayList(query
-				.getResultList());
-		return result;
+				.createQuery("SELECT c FROM Shipment c WHERE c.user = :user AND c.id = :id");
+		query.setParameter("user", user);
+		query.setParameter("id", id);
+		List<Shipment> list = query.getResultList();
+		if (list.size() == 1)
+			return list.get(0);
+		return null;
 	}
 
 	@Override

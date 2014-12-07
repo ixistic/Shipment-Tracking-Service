@@ -24,8 +24,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "user")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class User implements Serializable{
-	private static final int TYPE_DELIVERY_PERSON = 1;
-	private static final int TYPE_CUSTOMER = 0;
+	public static final int TYPE_DELIVERY_PERSON = 1;
+	public static final int TYPE_CUSTOMER = 0;
 	private static final long serialVersionUID = 6979236188240217830L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -107,8 +107,8 @@ public class User implements Serializable{
 	public boolean equals(Object other) {
 		if (other == null || other.getClass() != this.getClass())
 			return false;
-		Item item = (Item) other;
-		return item.getId() == this.getId();
+		User user = (User) other;
+		return user.getId() == this.getId();
 	}
 	
 	public void setForeignKeyToShipment() {
