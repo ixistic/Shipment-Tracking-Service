@@ -32,8 +32,8 @@ import org.eclipse.persistence.oxm.annotations.XmlInverseReference;
 public class Item implements Serializable {
 	private static final long serialVersionUID = 5460610151721574876L;
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "item_id")
 	@XmlAttribute
 	private long id;
 	@Column(name = "name")
@@ -44,7 +44,7 @@ public class Item implements Serializable {
 	@Column(name = "quantity")
 	private int quantity;
 	@ManyToOne(cascade=CascadeType.ALL)
-	@JoinColumn(name = "shipment_id", referencedColumnName = "id")
+	@JoinColumn(name = "shipment_id", referencedColumnName = "shipment_id")
 	@XmlInverseReference(mappedBy = "item")
 	@XmlTransient
 	private Shipment shipment;

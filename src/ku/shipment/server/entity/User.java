@@ -1,16 +1,22 @@
 package ku.shipment.server.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
@@ -22,8 +28,8 @@ public class User implements Serializable{
 	private static final int TYPE_CUSTOMER = 0;
 	private static final long serialVersionUID = 6979236188240217830L;
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "user_id")
 	@XmlAttribute
 	private long id;
 	@Column(name = "email")
@@ -33,6 +39,10 @@ public class User implements Serializable{
 	//default 0 : customer
 	@Column(name = "type")
 	private int type;
+	
+	@XmlElementWrapper(name = "shipments")
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<Shipment> shipment = new ArrayList<Shipment>();
 	
 	public User(){
 		
@@ -75,6 +85,18 @@ public class User implements Serializable{
 	public void setType(int type) {
 		this.type = type;
 	}
+	
+	public List<Shipment> getShipment() {
+		return shipment;
+	}
+
+	public void setShipment(List<Shipment> shipments) {
+		this.shipment = shipments;
+	}
+	
+	public void addShipment(Shipment shipment){
+		this.shipment.add(shipment);
+	}
 
 	@Override
 	public String toString() {
@@ -87,5 +109,14 @@ public class User implements Serializable{
 			return false;
 		Item item = (Item) other;
 		return item.getId() == this.getId();
+	}
+	
+	public void setForeignKeyToShipment() {
+		if (shipment != null) {
+			for (Shipment single_shipment : shipment) {
+				single_shipment.setUser(this);
+			}
+		}
+
 	}
 }

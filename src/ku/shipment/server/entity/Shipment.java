@@ -15,6 +15,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -23,8 +25,12 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.eclipse.persistence.oxm.annotations.XmlInverseReference;
 
 @Entity
 @Table(name = "shipments")
@@ -38,9 +44,9 @@ public class Shipment implements Serializable {
 	public static final String STATUS_RECEIVED = "received";
 	private static final long serialVersionUID = 3645343276027601559L;
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@XmlAttribute
-	@Column(name = "id")
+	@Column(name = "shipment_id")
 	private long id;
 	@Column(name = "status")
 	private String status;
@@ -54,8 +60,8 @@ public class Shipment implements Serializable {
 	@Column(name = "status_sending_time")
 	private Date status_sending_time;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "status_recieved_time")
-	private Date status_recieved_time;
+	@Column(name = "status_received_time")
+	private Date status_received_time;
 	@Column(name = "type")
 	private String type;
 	@Column(name = "courier_name")
@@ -71,13 +77,15 @@ public class Shipment implements Serializable {
 	@Column(name = "total_cost")
 	private float total_cost;
 
-	@XmlElement(name = "item")
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
+	@XmlInverseReference(mappedBy = "shipment")
+	@XmlTransient
+	private User user;
+
+	@XmlElementWrapper(name = "items")
 	@OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Item> item = new ArrayList<Item>();
-
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
 
 	public Shipment() {
 
@@ -123,12 +131,12 @@ public class Shipment implements Serializable {
 		this.status_sending_time = status_sending_time;
 	}
 
-	public Date getStatus_recieved_time() {
-		return status_recieved_time;
+	public Date getStatus_received_time() {
+		return status_received_time;
 	}
 
-	public void setStatus_recieved_time(Date status_recieved_time) {
-		this.status_recieved_time = status_recieved_time;
+	public void setStatus_received_time(Date status_received_time) {
+		this.status_received_time = status_received_time;
 	}
 
 	public String getType() {
@@ -187,6 +195,14 @@ public class Shipment implements Serializable {
 		this.total_weight = total_weight;
 	}
 
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
 	public List<Item> getItem() {
 		return item;
 	}
@@ -228,7 +244,7 @@ public class Shipment implements Serializable {
 			setStatus_packed_time(new Date());
 			return true;
 		} else if (this.status.equals(STATUS_RECEIVED)) {
-			setStatus_recieved_time(new Date());
+			setStatus_received_time(new Date());
 			return true;
 		} else if (this.status.equals(STATUS_SENDING)) {
 			setStatus_sending_time(new Date());
@@ -274,8 +290,10 @@ public class Shipment implements Serializable {
 	}
 
 	public void setForeignKeyToItem() {
-		for (Item single_item : item) {
-			single_item.setShipment(this);
+		if (item != null) {
+			for (Item single_item : item) {
+				single_item.setShipment(this);
+			}
 		}
 
 	}

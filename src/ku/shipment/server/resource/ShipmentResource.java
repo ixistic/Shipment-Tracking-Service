@@ -45,7 +45,6 @@ import ku.shipment.server.service.ShipmentDao;
 import ku.shipment.server.service.ShipmentDaoFactory;
 import ku.shipment.server.service.UserDao;
 import ku.shipment.server.service.UserDaoFactory;
-import ku.shipment.server.service.BCrypt;
 
 import org.apache.oltu.oauth2.client.OAuthClient;
 import org.apache.oltu.oauth2.client.URLConnectionClient;
@@ -77,8 +76,8 @@ public class ShipmentResource {
 	private OAuthClientRequest request;
 	private OAuthClientResponse response;
 
-	private final String CLIENT_ID = "267002662830-4vdpuskha48mq3o2dvq1c3jihub9s49m.apps.googleusercontent.com";
-	private final String CLIENT_SECRET = "ZzhMn_mvuhjyL22E4T3Aa8jy";
+	private final String CLIENT_ID = "229216041764-sjdasnqgvom7lcva4fni6nrcpid4fv7u.apps.googleusercontent.com";
+	private final String CLIENT_SECRET = "wD1SIj5DdJiO5d4qz7FVL0Ko";
 
 	/**
 	 * Construct ShipmentDao from DaoFactory.
@@ -157,11 +156,11 @@ public class ShipmentResource {
 			email = getEmail(((OAuthResourceResponse) getClientResource(accessToken))
 					.getBody());
 			
-			// BCrypt
-			String salt = BCrypt.gensalt(12);
-			String hashed_password = BCrypt.hashpw(accessToken, salt);
+//			// BCrypt
+//			String salt = BCrypt.gensalt(12);
+//			String hashed_password = BCrypt.hashpw(accessToken, salt);
 			
-			System.out.println(hashed_password);
+//			System.out.println(hashed_password);
 			
 			// MD5
 			MessageDigest md = null;
@@ -179,6 +178,7 @@ public class ShipmentResource {
 				for(byte b : digest){
 		               sb.append(String.format("%02x", b&0xff));
 		           }
+				accessToken = sb.toString();
 				System.out.println(sb.toString());
 			} catch (NoSuchAlgorithmException e) {
 				e.printStackTrace();
@@ -219,7 +219,9 @@ public class ShipmentResource {
 		URI uri = null;
 		try {
 			// if ( host.equals("web-url") ) host + "index.php"
-			uri = new URI("http://" + host + "/access.php?accessToken="
+//			uri = new URI("http://" + host + "/index.php?accessToken="
+//					+ token);
+			uri = new URI("http://" + host + ":7777/web-admin/index.php?accessToken="
 					+ token);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
@@ -387,7 +389,7 @@ public class ShipmentResource {
 		status.setStatus_created_time(shipment.getStatus_created_time());
 		status.setStatus_packed_time(shipment.getStatus_packed_time());
 		status.setStatus_sending_time(shipment.getStatus_sending_time());
-		status.setStatus_recieved_time(shipment.getStatus_recieved_time());
+		status.setStatus_received_time(shipment.getStatus_received_time());
 		// json
 		if (accept.equals(MediaType.APPLICATION_JSON)) {
 			String response = convertXMLtoJSON(mashallXml(status));
@@ -495,11 +497,12 @@ public class ShipmentResource {
 					.getTotal_weight()));
 			shipment.updateStatus(Shipment.STATUS_CREATED);
 			shipment.setForeignKeyToItem();
+			user.addShipment(shipment);
+			user.setForeignKeyToShipment();
 			if (shipmentDao.find(shipment.getId()) != null) {
 				return Response.status(Response.Status.CONFLICT).build();
 			}
-			System.out.println(shipment.getId());
-			if (!shipmentDao.save(shipment)) {
+			if (!userDao.update(user)) {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
 			URI uri = uriInfo.getAbsolutePathBuilder()
