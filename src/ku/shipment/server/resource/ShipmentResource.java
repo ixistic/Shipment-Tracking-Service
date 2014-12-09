@@ -157,33 +157,8 @@ public class ShipmentResource {
 			email = getEmail(((OAuthResourceResponse) getClientResource(accessToken))
 					.getBody());
 
-			// // BCrypt
-			// String salt = BCrypt.gensalt(12);
-			// String hashed_password = BCrypt.hashpw(accessToken, salt);
-
-			// System.out.println(hashed_password);
-
-			// MD5
-			MessageDigest md = null;
-			try {
-				md = MessageDigest.getInstance("MD5");
-				md.reset();
-				try {
-					md.update(accessToken.getBytes("UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				byte[] digest = md.digest();
-
-				StringBuffer sb = new StringBuffer();
-				for (byte b : digest) {
-					sb.append(String.format("%02x", b & 0xff));
-				}
-				accessToken = sb.toString();
-				System.out.println(sb.toString());
-			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-			}
+			// Hash access token from google to MD5
+			accessToken = md5(accessToken);
 
 			User oldUser = userDao.findByEmail(email);
 			if (oldUser != null) {
@@ -309,13 +284,10 @@ public class ShipmentResource {
 		}
 		
 		User user = userDao.findByAccessToken(accessToken);
-		System.out.println(user.getAccessToken());
-		System.out.println(user.getEmail());
 		if (user != null && checkLastLogin(user, req)) {
 			GenericEntity<List<Shipment>> ge = null;
 			List<Shipment> shipments = null;
 			// admin user
-			System.out.println(user.getType());
 			if (user.getType() == user.TYPE_DELIVERY_PERSON) {
 				shipments = shipmentDao.findAll();
 			}
@@ -495,7 +467,6 @@ public class ShipmentResource {
 		User user = userDao.findByAccessToken(accessToken);
 		if (user != null && checkLastLogin(user, req)) {
 			Shipment shipment = shipmentDao.find(id);
-			System.out.println(shipment.getId()+" "+shipment.getUser().getId());
 			// normal user
 			if (!(user.getType() == user.TYPE_DELIVERY_PERSON)) {
 				if (!shipment.getUser().equals(user)) {
@@ -672,6 +643,30 @@ public class ShipmentResource {
 		}
 		return null;
 
+	}
+	
+	public String md5(String accessToken){
+		MessageDigest md = null;
+		String result = null;
+		try {
+			md = MessageDigest.getInstance("MD5");
+			md.reset();
+			try {
+				md.update(accessToken.getBytes("UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			byte[] digest = md.digest();
+
+			StringBuffer sb = new StringBuffer();
+			for (byte b : digest) {
+				sb.append(String.format("%02x", b & 0xff));
+			}
+			result = sb.toString();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 	public boolean checkLastLogin(User user, HttpServletRequest req) {
