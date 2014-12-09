@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Singleton;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -96,7 +97,7 @@ public class ShipmentResource {
 	 */
 	@GET
 	@Path("/auth")
-	public Response authenticate() {
+	public Response authenticate(@HeaderParam("Host") String host) {
 		try {
 			request = OAuthClientRequest
 					.authorizationProvider(OAuthProviderType.GOOGLE)
@@ -126,7 +127,7 @@ public class ShipmentResource {
 	@GET
 	@Path("/oauth2callback")
 	public Response authorize(@QueryParam("code") String code,
-			@QueryParam("state") String state) {
+			@QueryParam("state") String state, @Context HttpServletRequest req) {
 		// path to redirect after authorization
 
 		String accessToken = "";
@@ -187,11 +188,13 @@ public class ShipmentResource {
 			User oldUser = userDao.findByEmail(email);
 			if (oldUser != null) {
 				oldUser.setAccessToken(accessToken);
+				oldUser.setLast_login(req.getRemoteAddr());
 				userDao.update(oldUser);
 			} else {
 				User user = new User();
 				user.setAccessToken(accessToken);
 				user.setEmail(email);
+				user.setLast_login(req.getRemoteAddr());
 				userDao.save(user);
 			}
 
@@ -293,15 +296,13 @@ public class ShipmentResource {
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getShipments(@Context Request request,
 			@HeaderParam("Accept") String accept,
-			@HeaderParam("Authorization") String accessToken) {
-		if (accept == null) {
-			accept = MediaType.APPLICATION_XML;
-		}
+			@HeaderParam("Authorization") String accessToken,
+			@Context HttpServletRequest req) {
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 		User user = userDao.findByAccessToken(accessToken);
-		if (user != null) {
+		if (user != null && checkLastLogin(user, req)) {
 			GenericEntity<List<Shipment>> ge = null;
 			List<Shipment> shipments = null;
 			// admin user
@@ -344,7 +345,8 @@ public class ShipmentResource {
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getShipmentById(@PathParam("id") long id,
 			@Context Request request, @HeaderParam("Accept") String accept,
-			@HeaderParam("Authorization") String accessToken) {
+			@HeaderParam("Authorization") String accessToken,
+			@Context HttpServletRequest req) {
 		if (accept == null) {
 			accept = MediaType.APPLICATION_XML;
 		}
@@ -352,7 +354,7 @@ public class ShipmentResource {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 		User user = userDao.findByAccessToken(accessToken);
-		if (user != null) {
+		if (user != null && checkLastLogin(user, req)) {
 			Shipment shipment = null;
 			shipment = shipmentDao.find(id);
 			// normal user
@@ -437,12 +439,13 @@ public class ShipmentResource {
 	public Response putContact(@PathParam("id") long id,
 			JAXBElement<Shipment> element, @Context Request request,
 			@Context UriInfo uriInfo,
-			@HeaderParam("Authorization") String accessToken) {
+			@HeaderParam("Authorization") String accessToken,
+			@Context HttpServletRequest req) {
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 		User user = userDao.findByAccessToken(accessToken);
-		if (user != null) {
+		if (user != null && checkLastLogin(user, req)) {
 			Shipment newStatus = element.getValue();
 			Shipment shipment = shipmentDao.find(id);
 			shipment.updateStatus(newStatus.getStatus());
@@ -474,12 +477,13 @@ public class ShipmentResource {
 	@Path("{id}")
 	public Response deleteShipment(@PathParam("id") long id,
 			@Context Request request,
-			@HeaderParam("Authorization") String accessToken) {
+			@HeaderParam("Authorization") String accessToken,
+			@Context HttpServletRequest req) {
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 		User user = userDao.findByAccessToken(accessToken);
-		if (user != null) {
+		if (user != null && checkLastLogin(user, req)) {
 			Shipment shipment = shipmentDao.find(id);
 			// normal user
 			if (!(user.getType() == user.TYPE_DELIVERY_PERSON)) {
@@ -513,12 +517,13 @@ public class ShipmentResource {
 	@Consumes({ MediaType.APPLICATION_XML })
 	public Response post(JAXBElement<Shipment> element,
 			@Context UriInfo uriInfo, @Context Request request,
-			@HeaderParam("Authorization") String accessToken) {
+			@HeaderParam("Authorization") String accessToken,
+			@Context HttpServletRequest req) {
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 		User user = userDao.findByAccessToken(accessToken);
-		if (user != null) {
+		if (user != null && checkLastLogin(user, req)) {
 			Shipment shipment = element.getValue();
 			shipment.setTotal_weight(shipment.calTotalWeight());
 			shipment.setTotal_cost(shipment.calCostByFreightRates(shipment
@@ -654,6 +659,10 @@ public class ShipmentResource {
 		}
 		return null;
 
+	}
+
+	public boolean checkLastLogin(User user, HttpServletRequest req) {
+		return user.getLast_login().equals(req.getRemoteAddr());
 	}
 
 }

@@ -39,6 +39,8 @@ public class User implements Serializable{
 	//default 0 : customer
 	@Column(name = "type")
 	private int type;
+	@Column(name = "last_login")
+	private String last_login;
 	
 	@XmlElementWrapper(name = "shipments")
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -86,6 +88,14 @@ public class User implements Serializable{
 		this.type = type;
 	}
 	
+	public String getLast_login() {
+		return last_login;
+	}
+
+	public void setLast_login(String last_login) {
+		this.last_login = last_login;
+	}
+
 	public List<Shipment> getShipment() {
 		return shipment;
 	}

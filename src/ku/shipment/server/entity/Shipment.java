@@ -42,6 +42,7 @@ public class Shipment implements Serializable {
 	public static final String STATUS_PACKED = "packed";
 	public static final String STATUS_SENDING = "sending";
 	public static final String STATUS_RECEIVED = "received";
+	public static final String TYPE_EMS = "EMS";
 	private static final long serialVersionUID = 3645343276027601559L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -227,7 +228,7 @@ public class Shipment implements Serializable {
 	}
 
 	public float calCostByFreightRates(float weight) {
-		if (getType().equals("EMS")) {
+		if (getType().equals(TYPE_EMS)) {
 			return (weight / 20 * 8) + 20;
 
 		} else {
