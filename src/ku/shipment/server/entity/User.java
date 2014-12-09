@@ -129,4 +129,8 @@ public class User implements Serializable{
 		}
 
 	}
+
+	public Shipment getLastShipment() {
+		return shipment.get(shipment.size()-1);
+	}
 }

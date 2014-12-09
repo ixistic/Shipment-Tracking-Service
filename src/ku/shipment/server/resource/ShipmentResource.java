@@ -216,17 +216,23 @@ public class ShipmentResource {
 	 */
 	@GET
 	@Path("access/{accessToken}")
-	public Response getAccessToken(@HeaderParam("Host") String host,
+	public Response getAccessToken(@Context HttpServletRequest req,
 			@PathParam("accessToken") String token) {
-		int portlen = host.indexOf(":");
-		host = host.substring(0, portlen);
+		String host = req.getRemoteAddr();
+		
+		System.out.println(host);
+		
 		URI uri = null;
 		try {
 			// if ( host.equals("web-url") ) host + "index.php"
 			// uri = new URI("http://" + host + "/index.php?accessToken="
 			// + token);
-			uri = new URI("http://" + host
+			if ( host.equals("158.108.39.196") )
+				uri = new URI("http://" + host
 					+ ":7777/web-admin/index.php?accessToken=" + token);
+			else
+				uri = new URI("http://" + host
+					+ "/access.php?accessToken=" + token);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
@@ -301,11 +307,15 @@ public class ShipmentResource {
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
+		
 		User user = userDao.findByAccessToken(accessToken);
+		System.out.println(user.getAccessToken());
+		System.out.println(user.getEmail());
 		if (user != null && checkLastLogin(user, req)) {
 			GenericEntity<List<Shipment>> ge = null;
 			List<Shipment> shipments = null;
 			// admin user
+			System.out.println(user.getType());
 			if (user.getType() == user.TYPE_DELIVERY_PERSON) {
 				shipments = shipmentDao.findAll();
 			}
@@ -451,7 +461,7 @@ public class ShipmentResource {
 			shipment.updateStatus(newStatus.getStatus());
 			// normal user
 			if (!(user.getType() == user.TYPE_DELIVERY_PERSON)) {
-				if (shipment.getUser().equals(user)) {
+				if (!shipment.getUser().equals(user)) {
 					return Response.status(Response.Status.UNAUTHORIZED)
 							.build();
 				}
@@ -485,9 +495,10 @@ public class ShipmentResource {
 		User user = userDao.findByAccessToken(accessToken);
 		if (user != null && checkLastLogin(user, req)) {
 			Shipment shipment = shipmentDao.find(id);
+			System.out.println(shipment.getId()+" "+shipment.getUser().getId());
 			// normal user
 			if (!(user.getType() == user.TYPE_DELIVERY_PERSON)) {
-				if (shipment.getUser().equals(user)) {
+				if (!shipment.getUser().equals(user)) {
 					return Response.status(Response.Status.UNAUTHORIZED)
 							.build();
 				}
@@ -530,6 +541,7 @@ public class ShipmentResource {
 					.getTotal_weight()));
 			shipment.updateStatus(Shipment.STATUS_CREATED);
 			shipment.setForeignKeyToItem();
+			shipment.setUser(user);
 			user.addShipment(shipment);
 			user.setForeignKeyToShipment();
 			if (shipmentDao.find(shipment.getId()) != null) {
@@ -538,8 +550,9 @@ public class ShipmentResource {
 			if (!userDao.update(user)) {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
+			Shipment ship = user.getLastShipment();
 			URI uri = uriInfo.getAbsolutePathBuilder()
-					.path(shipment.getId() + "").build();
+					.path(ship.getId() + "").build();
 			return Response.created(uri).build();
 		}
 		return Response.status(Response.Status.UNAUTHORIZED).build();
