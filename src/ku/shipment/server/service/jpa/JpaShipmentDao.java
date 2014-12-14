@@ -15,12 +15,24 @@ import ku.shipment.server.entity.Shipment;
 import ku.shipment.server.entity.User;
 import ku.shipment.server.service.ShipmentDao;
 
+/**
+ * Data access object for saving and retrieving shipment, using JPA
+ * 
+ * @author Veerapat Threeravipark 5510547022
+ * 
+ */
 public class JpaShipmentDao implements ShipmentDao {
 	private final EntityManager em;
 
+	/**
+	 * Constructor of this class, initial entity manager
+	 * 
+	 * @param em
+	 *            entity manager
+	 */
 	public JpaShipmentDao(EntityManager em) {
 		this.em = em;
-//		createTestShipment();
+		// createTestShipment();
 	}
 
 	private void createTestShipment() {
@@ -49,9 +61,9 @@ public class JpaShipmentDao implements ShipmentDao {
 		List<Shipment> shipments = Lists.newArrayList(query.getResultList());
 		return Collections.unmodifiableList(shipments);
 	}
-	
+
 	@Override
-	public Shipment findByUserAndId(User user,long id) {
+	public Shipment findByUserAndId(User user, long id) {
 		Query query = em
 				.createQuery("SELECT c FROM Shipment c WHERE c.user = :user AND c.id = :id");
 		query.setParameter("user", user);
@@ -61,51 +73,28 @@ public class JpaShipmentDao implements ShipmentDao {
 			return list.get(0);
 		return null;
 	}
-	
+
 	@Override
 	public boolean delete(long id) {
-		
+
 		Shipment shipment = find(id);
 		if (shipment == null)
 			return false;
 		EntityTransaction tx = em.getTransaction();
 		tx.begin();
-		for(Item item : shipment.getItem()){
+		for (Item item : shipment.getItem()) {
 			Query query1 = em
 					.createQuery("DELETE FROM Item c WHERE c.id = :id");
-			query1.setParameter("id", item.getId()); 
-			query1.executeUpdate(); 
+			query1.setParameter("id", item.getId());
+			query1.executeUpdate();
 		}
 		Query query2 = em
 				.createQuery("DELETE FROM Shipment c WHERE c.id = :id");
-		query2.setParameter("id", id); 
-		query2.executeUpdate();  
+		query2.setParameter("id", id);
+		query2.executeUpdate();
 		tx.commit();
 		return true;
 	}
-
-//	@Override
-//	public boolean delete(long id) {
-//		Shipment shipment = find(id);
-//		EntityTransaction tx = em.getTransaction();
-//		if (shipment == null)
-//			return false;
-//		try {
-//			em.getTransaction().begin();
-//			em.remove(shipment);
-//			em.getTransaction().commit();
-//			return true;
-//		} catch (EntityExistsException ex) {
-//			Logger.getLogger(this.getClass().getName())
-//					.warning(ex.getMessage());
-//			if (tx.isActive())
-//				try {
-//					tx.rollback();
-//				} catch (Exception e) {
-//				}
-//			return false;
-//		}
-//	}
 
 	@Override
 	public boolean save(Shipment shipment) {

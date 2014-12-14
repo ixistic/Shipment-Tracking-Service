@@ -19,6 +19,12 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * User entity.
+ * 
+ * @author Veerapat Threeravipark 5510547022
+ * 
+ */
 @Entity
 @Table(name = "users")
 @XmlRootElement(name = "user")
@@ -104,6 +110,10 @@ public class User implements Serializable{
 		this.shipment = shipments;
 	}
 	
+	/**
+	 * Add shipment to shipment list
+	 * @param shipment shipment object
+	 */
 	public void addShipment(Shipment shipment){
 		this.shipment.add(shipment);
 	}
@@ -121,6 +131,9 @@ public class User implements Serializable{
 		return user.getId() == this.getId();
 	}
 	
+	/**
+	 * Set foreign key to shipment
+	 */
 	public void setForeignKeyToShipment() {
 		if (shipment != null) {
 			for (Shipment single_shipment : shipment) {
@@ -130,7 +143,14 @@ public class User implements Serializable{
 
 	}
 
+	/**
+	 * Get last shipment
+	 * @return last shipment
+	 */
 	public Shipment getLastShipment() {
-		return shipment.get(shipment.size()-1);
+		if(shipment != null) {
+			return shipment.get(shipment.size()-1);
+		}
+		return null;
 	}
 }

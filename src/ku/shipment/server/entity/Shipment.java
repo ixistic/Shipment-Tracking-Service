@@ -32,6 +32,12 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.eclipse.persistence.oxm.annotations.XmlInverseReference;
 
+/**
+ * Shipment entity.
+ * 
+ * @author Veerapat Threeravipark 5510547022
+ * 
+ */
 @Entity
 @Table(name = "shipments")
 @XmlRootElement(name = "shipment")
@@ -212,6 +218,10 @@ public class Shipment implements Serializable {
 		this.item = item;
 	}
 
+	/**
+	 * Add item to array list.
+	 * @param item item for shipping
+	 */
 	public void addItem(Item item) {
 		this.item.add(item);
 		if (item.getShipment() != this) {
@@ -219,6 +229,10 @@ public class Shipment implements Serializable {
 		}
 	}
 
+	/**
+	 * Calculate total weight from all item.
+	 * @return total weight
+	 */
 	public float calTotalWeight() {
 		float total = 0;
 		for (Item single_item : item) {
@@ -227,6 +241,11 @@ public class Shipment implements Serializable {
 		return total;
 	}
 
+	/**
+	 * Calculate cost of shipping by type of shipment.
+	 * @param weight weight of order
+	 * @return cost for shipping
+	 */
 	public float calCostByFreightRates(float weight) {
 		if (getType().equals(TYPE_EMS)) {
 			return (weight / 20 * 8) + 20;
@@ -236,6 +255,11 @@ public class Shipment implements Serializable {
 		}
 	}
 
+	/**
+	 * Update status's time.
+	 * @param status status of shipping product
+	 * @return true if correct update status, otherwise false
+	 */
 	public boolean updateStatus(String status) {
 		setStatus(status);
 		if (this.status.equals(STATUS_CREATED)) {
@@ -259,6 +283,7 @@ public class Shipment implements Serializable {
 		return String.format("[%d]", id);
 	}
 
+	@Override
 	public boolean equals(Object other) {
 		if (other == null || other.getClass() != this.getClass())
 			return false;
@@ -267,29 +292,8 @@ public class Shipment implements Serializable {
 	}
 
 	/**
-	 * Construct sha1(secure hash) of a text string.
-	 * 
-	 * @return string string of sha1
+	 * Set foreign key to item
 	 */
-	public String sha1() {
-		int text = this.hashCode();
-		String input = "" + id + text;
-		MessageDigest mDigest = null;
-		try {
-			mDigest = MessageDigest.getInstance("SHA1");
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-		byte[] result = mDigest.digest(input.getBytes());
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < result.length; i++) {
-			sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16)
-					.substring(1));
-		}
-
-		return sb.toString();
-	}
-
 	public void setForeignKeyToItem() {
 		if (item != null) {
 			for (Item single_item : item) {

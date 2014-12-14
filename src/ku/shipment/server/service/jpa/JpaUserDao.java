@@ -13,9 +13,21 @@ import jersey.repackaged.com.google.common.collect.Lists;
 import ku.shipment.server.entity.User;
 import ku.shipment.server.service.UserDao;
 
+/**
+ * Data access object for saving and retrieving user, using JPA
+ * 
+ * @author Veerapat Threeravipark 5510547022
+ * 
+ */
 public class JpaUserDao implements UserDao {
 	private final EntityManager em;
 
+	/**
+	 * Constructor of this class, initial entity manager
+	 * 
+	 * @param em
+	 *            entity manager
+	 */
 	public JpaUserDao(EntityManager em) {
 		this.em = em;
 		// createTestShipment();

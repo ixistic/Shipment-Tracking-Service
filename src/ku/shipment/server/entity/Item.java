@@ -24,6 +24,11 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.eclipse.persistence.oxm.annotations.XmlInverseReference;
 
+/**
+ * Item entity.
+ * 
+ * @author Veerapat Threeravipark 5510547022
+ */
 @Entity
 @Table(name = "items")
 @XmlRootElement(name = "item")
@@ -116,27 +121,4 @@ public class Item implements Serializable {
 		return item.getId() == this.getId();
 	}
 
-	/**
-	 * Construct sha1(secure hash) of a text string.
-	 * 
-	 * @return string string of sha1
-	 */
-	public String sha1() {
-		int text = this.hashCode();
-		String input = "" + id + text;
-		MessageDigest mDigest = null;
-		try {
-			mDigest = MessageDigest.getInstance("SHA1");
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-		byte[] result = mDigest.digest(input.getBytes());
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < result.length; i++) {
-			sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16)
-					.substring(1));
-		}
-
-		return sb.toString();
-	}
 }

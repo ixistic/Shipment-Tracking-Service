@@ -64,6 +64,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
 
+/**
+ * 
+ * @author veerapat, suwijak
+ *
+ */
 @Path("/shipments")
 @Singleton
 public class ShipmentResource {
@@ -77,8 +82,14 @@ public class ShipmentResource {
 	private OAuthClientRequest request;
 	private OAuthClientResponse response;
 
+	private final String DEFAULT_PATH = "shipments/";
 	private final String CLIENT_ID = "229216041764-sjdasnqgvom7lcva4fni6nrcpid4fv7u.apps.googleusercontent.com";
 	private final String CLIENT_SECRET = "wD1SIj5DdJiO5d4qz7FVL0Ko";
+	private final String CLIENT_WEB_PATH = "/access.php";
+	private final String HOST_SERVER = "128.199.177.37";
+	private final String HOST_WEB_ADMIN = "158.108.138.32";
+	private final String WEB_ADMIN_PATH = "/web-admin/index.php";
+	private final String OAUTH_CALLBACK_PATH = "shipments/oauth2callback";
 
 	/**
 	 * Construct ShipmentDao from DaoFactory.
@@ -92,12 +103,13 @@ public class ShipmentResource {
 	}
 
 	/**
+	 * Authenticate request for authorization code
 	 * 
-	 * @return
+	 * @return redirect to user login
 	 */
 	@GET
 	@Path("/auth")
-	public Response authenticate(@HeaderParam("Host") String host) {
+	public Response authenticate() {
 		try {
 			request = OAuthClientRequest
 					.authorizationProvider(OAuthProviderType.GOOGLE)
@@ -106,7 +118,7 @@ public class ShipmentResource {
 					.setScope("email")
 					.setRedirectURI(
 							UriBuilder.fromUri(uriInfo.getBaseUri())
-									.path("shipments/oauth2callback").build()
+									.path(OAUTH_CALLBACK_PATH).build()
 									.toString()).buildQueryMessage();
 
 			URI redirect = new URI(request.getLocationUri());
@@ -119,10 +131,15 @@ public class ShipmentResource {
 	}
 
 	/**
+	 * Redirected from authenticate method Create user using access token Use
+	 * user remote address and md5 of access token for verify user
 	 * 
 	 * @param code
+	 *            authorization code
 	 * @param state
-	 * @return
+	 * @param req
+	 *            HttpServletRequest for getRemoteAddress
+	 * @return redirect to shipments/access for mobile to receive access token
 	 */
 	@GET
 	@Path("/oauth2callback")
@@ -142,7 +159,7 @@ public class ShipmentResource {
 					.setClientSecret(CLIENT_SECRET)
 					.setRedirectURI(
 							UriBuilder.fromUri(uriInfo.getBaseUri())
-									.path("shipments/oauth2callback").build()
+									.path(OAUTH_CALLBACK_PATH).build()
 									.toString())
 					.setGrantType(GrantType.AUTHORIZATION_CODE)
 					.buildBodyMessage();
@@ -179,35 +196,40 @@ public class ShipmentResource {
 		}
 
 		final URI uri = uriInfo.getBaseUriBuilder()
-				.path("shipments/access/" + accessToken).build();
+				.path(DEFAULT_PATH + "access/" + accessToken).build();
 
 		return Response.seeOther(uri).build();
 	}
 
 	/**
+	 * Redirect user back to their own host No duty in Mobile application
 	 * 
+	 * @param req
+	 *            HttpServletRequest for getRemoteAddress
 	 * @param token
-	 * @return
+	 *            send back to user host as query param
+	 * @return redirect to user own host
 	 */
 	@GET
 	@Path("access/{accessToken}")
 	public Response getAccessToken(@Context HttpServletRequest req,
 			@PathParam("accessToken") String token) {
 		String host = req.getRemoteAddr();
-		
+
 		System.out.println(host);
-		
+
 		URI uri = null;
 		try {
-			// if ( host.equals("web-url") ) host + "index.php"
-			// uri = new URI("http://" + host + "/index.php?accessToken="
-			// + token);
-			if ( host.equals("158.108.39.196") )
-				uri = new URI("http://" + host
-					+ ":7777/web-admin/index.php?accessToken=" + token);
-			else
-				uri = new URI("http://" + host
-					+ "/access.php?accessToken=" + token);
+			// admin
+			if (host.equals(HOST_WEB_ADMIN)) {
+				uri = new URI("http://" + HOST_SERVER + WEB_ADMIN_PATH
+						+ "?accessToken=" + token);
+			}
+			// client
+			else {
+				uri = new URI("http://" + host + CLIENT_WEB_PATH
+						+ "?accessToken=" + token);
+			}
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
@@ -215,9 +237,11 @@ public class ShipmentResource {
 	}
 
 	/**
+	 * Get user information from google+ API
 	 * 
 	 * @param accessToken
-	 * @return
+	 *            use to exchange for the user information
+	 * @return user information as OAuthClientResponse
 	 */
 	public OAuthClientResponse getClientResource(String accessToken) {
 		try {
@@ -233,9 +257,11 @@ public class ShipmentResource {
 	}
 
 	/**
+	 * Get user email
 	 * 
 	 * @param body
-	 * @return
+	 *            response from google+ API
+	 * @return user email as string
 	 */
 	public String getEmail(String body) {
 
@@ -266,12 +292,19 @@ public class ShipmentResource {
 	}
 
 	/**
+	 * Get all shipments
 	 * 
 	 * @param request
+	 *            request from client
 	 * @param accept
+	 *            accept request-header field can be used to specify certain
+	 *            media types which are acceptable for the response
 	 * @param accessToken
-	 * @param auth
-	 * @return
+	 *            access token to authorize server
+	 * @param req
+	 *            servlet client HTTP request
+	 * @return response 200 OK if result not null that show shipments. If result
+	 *         is null response 404 NOT FOUND. 401 unauthorized
 	 */
 	@GET
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
@@ -282,7 +315,7 @@ public class ShipmentResource {
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
-		
+
 		User user = userDao.findByAccessToken(accessToken);
 		if (user != null && checkLastLogin(user, req)) {
 			GenericEntity<List<Shipment>> ge = null;
@@ -315,12 +348,21 @@ public class ShipmentResource {
 	}
 
 	/**
-	 * Get a shipment by id for admin.
+	 * Get a shipment by id for owner shipment.
 	 * 
 	 * @param id
 	 *            identifier of shipment
+	 * @param request
+	 *            request from client
+	 * @param accept
+	 *            accept request-header field can be used to specify certain
+	 *            media types which are acceptable for the response
+	 * @param accessToken
+	 *            access token to authorize server
+	 * @param req
+	 *            servlet client HTTP request
 	 * @return response 200 OK if result not null that show shipment. If result
-	 *         is null response 404 NOT FOUND
+	 *         is null response 404 NOT FOUND. 401 unauthorized.
 	 */
 	@GET
 	@Path("{id}")
@@ -365,10 +407,15 @@ public class ShipmentResource {
 	}
 
 	/**
-	 * Get a shipment by id for user.
+	 * Get a shipment by id for all user.
 	 * 
 	 * @param id
 	 *            identifier of shipment
+	 * @param request
+	 *            request from client
+	 * @param accept
+	 *            accept request-header field can be used to specify certain
+	 *            media types which are acceptable for the response
 	 * @return response 200 OK if result not null that show shipment. If result
 	 *         is null response 404 NOT FOUND
 	 */
@@ -522,8 +569,8 @@ public class ShipmentResource {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
 			Shipment ship = user.getLastShipment();
-			URI uri = uriInfo.getAbsolutePathBuilder()
-					.path(ship.getId() + "").build();
+			URI uri = uriInfo.getAbsolutePathBuilder().path(ship.getId() + "")
+					.build();
 			return Response.created(uri).build();
 		}
 		return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -580,16 +627,12 @@ public class ShipmentResource {
 	}
 
 	/**
-	 * Construct Etag from shipment
+	 * Mashalling shipment object to xml.
 	 * 
 	 * @param shipment
-	 * @return etag Entity tag of shipment
+	 *            shipment object
+	 * @return xml as string
 	 */
-	public EntityTag attachEtag(Shipment shipment) {
-		EntityTag etag = new EntityTag(shipment.sha1());
-		return etag;
-	}
-
 	public String mashallXml(Shipment shipment) {
 		JAXBContext jaxbContext;
 		try {
@@ -609,6 +652,13 @@ public class ShipmentResource {
 		return null;
 	}
 
+	/**
+	 * Mashalling shipments object to xml.
+	 * 
+	 * @param shipments
+	 *            list of shipment object
+	 * @return xml as string
+	 */
 	public String mashallXml(Shipments shipments) {
 		JAXBContext jaxbContext;
 		try {
@@ -628,6 +678,13 @@ public class ShipmentResource {
 		return null;
 	}
 
+	/**
+	 * Convert xml to json
+	 * 
+	 * @param xml
+	 *            xml as string
+	 * @return json string
+	 */
 	public String convertXMLtoJSON(String xml) {
 		int PRETTY_PRINT_INDENT_FACTOR = 4;
 		JSONObject xmlJSONObj;
@@ -644,8 +701,15 @@ public class ShipmentResource {
 		return null;
 
 	}
-	
-	public String md5(String accessToken){
+
+	/**
+	 * Hash access token to MD5.
+	 * 
+	 * @param accessToken
+	 *            access token from google
+	 * @return MD5 string
+	 */
+	public String md5(String accessToken) {
 		MessageDigest md = null;
 		String result = null;
 		try {
@@ -669,6 +733,14 @@ public class ShipmentResource {
 		return result;
 	}
 
+	/**
+	 * Check last login of user. if last login is not equal , user need to login
+	 * for new access token.
+	 * 
+	 * @param user user who use this service
+	 * @param req HttpServletRequest for getRemoteAddress
+	 * @return return true if host up to date, otherwise false
+	 */
 	public boolean checkLastLogin(User user, HttpServletRequest req) {
 		return user.getLast_login().equals(req.getRemoteAddr());
 	}

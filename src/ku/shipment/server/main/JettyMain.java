@@ -1,7 +1,5 @@
 package ku.shipment.server.main;
 
-
-
 import java.util.EnumSet;
 
 import javax.servlet.DispatcherType;
@@ -14,7 +12,12 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ServerProperties;
 
-
+/**
+ * Main class for start and stop RESTful web service using a Jetty server.
+ * 
+ * @author Veerapat Threeravipark 5510547022
+ * 
+ */
 public class JettyMain {
 	/**
 	 * The default port to listen on. Typically 80 or 8080. On Ubuntu or MacOS
@@ -44,25 +47,32 @@ public class JettyMain {
 	 * dispatches requests to JAX-RS resource objects, and start the Jetty
 	 * server.
 	 * 
-	 * @param port running port of server
+	 * @param port
+	 *            running port of server
 	 * @return path of server
-	 * @throws Exception if Jetty server encounters any problem
+	 * @throws Exception
+	 *             if Jetty server encounters any problem
 	 */
 	public static String startServer(int port) throws Exception {
 		server = new Server(port);
-		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+		ServletContextHandler context = new ServletContextHandler(
+				ServletContextHandler.SESSIONS);
 		context.setContextPath("/");
-		ServletHolder holder = new ServletHolder(org.glassfish.jersey.servlet.ServletContainer.class);
-		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES,RESOURCE_PACKAGE);
-		holder.setInitParameter(ServerProperties.JSON_PROCESSING_FEATURE_DISABLE, "false");
+		ServletHolder holder = new ServletHolder(
+				org.glassfish.jersey.servlet.ServletContainer.class);
+		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES,
+				RESOURCE_PACKAGE);
+		holder.setInitParameter(
+				ServerProperties.JSON_PROCESSING_FEATURE_DISABLE, "false");
 		context.addServlet(holder, "/*");
-		context.addFilter(CORSResponseFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
+		context.addFilter(CORSResponseFilter.class, "/*",
+				EnumSet.allOf(DispatcherType.class));
 		server.setHandler(context);
 		System.out.println("Starting Jetty server on port ");
 		server.start();
-//		return server.getURI().toString();
-		//	Error because ku-win network 
-		return "http://localhost:"+port+"/";
+		// return server.getURI().toString();
+		// Error because ku-win network
+		return "http://localhost:" + port + "/";
 	}
 
 	/**

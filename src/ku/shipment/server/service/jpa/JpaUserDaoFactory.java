@@ -10,6 +10,14 @@ import javax.persistence.Persistence;
 import ku.shipment.server.service.UserDao;
 import ku.shipment.server.service.UserDaoFactory;
 
+/**
+ * JpaDaoFactory is a factory for DAO that use the Java Persistence API (JPA) to
+ * persist objects. The factory depends on the configuration information in
+ * META-INF/persistence.xml.
+ * 
+ * @author Veerapat Threeravipark 5510547022
+ * 
+ */
 public class JpaUserDaoFactory extends UserDaoFactory {
 	private static final String PERSISTENCE_UNIT = "shipments";
 	private static JpaUserDaoFactory factory;
@@ -22,6 +30,9 @@ public class JpaUserDaoFactory extends UserDaoFactory {
 		logger = Logger.getLogger(JpaUserDaoFactory.class.getName());
 	}
 
+	/**
+	 * Constructor of this class.
+	 */
 	public JpaUserDaoFactory() {
 		emf = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT);
 		em = emf.createEntityManager();

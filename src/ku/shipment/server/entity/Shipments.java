@@ -8,6 +8,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 
+/**
+ * Wrapper class that contain list of shipments.
+ * 
+ * @author Veerapat Threeravipark 5510547022
+ * 
+ */
 @XmlRootElement(name = "shipments")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlSeeAlso(Shipment.class)

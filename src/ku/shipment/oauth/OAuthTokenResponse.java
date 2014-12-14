@@ -9,6 +9,12 @@ import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Convert json instead of super class.
+ * 
+ * @author suwijak
+ * 
+ */
 public class OAuthTokenResponse extends OAuthJSONAccessTokenResponse {
 
 	@Override

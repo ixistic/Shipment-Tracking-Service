@@ -10,6 +10,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Response filter for add header of response.
+ * @author Veerapat Threeravipark 5510547022
+ *
+ */
 public class CORSResponseFilter
 implements Filter  {
 
