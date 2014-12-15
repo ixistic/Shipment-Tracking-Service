@@ -5,7 +5,7 @@ import ku.shipment.server.service.jpa.JpaShipmentDaoFactory;
 /**
  * DaoFactory defines methods for obtaining instance of data access objects.
  * 
- * @author Veerapat Threeravipark 5510547022
+ * @author veerapat
  * 
  */
 public abstract class ShipmentDaoFactory {

@@ -7,7 +7,7 @@ import ku.shipment.server.entity.User;
 /**
  * Interface defines the operations required by a DAO for user.
  * 
- * @author Veerapat Threeravipark 5510547022
+ * @author veerapat
  * 
  */
 public interface UserDao {

@@ -8,7 +8,7 @@ import ku.shipment.server.entity.User;
 /**
  * Interface defines the operations required by a DAO for shipment.
  * 
- * @author Veerapat Threeravipark 5510547022
+ * @author veerapat
  * 
  */
 public interface ShipmentDao {

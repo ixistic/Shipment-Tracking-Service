@@ -16,7 +16,7 @@ import ku.shipment.server.service.UserDao;
 /**
  * Data access object for saving and retrieving user, using JPA
  * 
- * @author Veerapat Threeravipark 5510547022
+ * @author veerapat, suwijak
  * 
  */
 public class JpaUserDao implements UserDao {

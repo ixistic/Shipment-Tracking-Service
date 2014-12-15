@@ -15,7 +15,7 @@ import ku.shipment.server.service.UserDaoFactory;
  * persist objects. The factory depends on the configuration information in
  * META-INF/persistence.xml.
  * 
- * @author Veerapat Threeravipark 5510547022
+ * @author veerapat
  * 
  */
 public class JpaUserDaoFactory extends UserDaoFactory {

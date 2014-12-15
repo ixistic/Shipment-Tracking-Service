@@ -18,7 +18,7 @@ import ku.shipment.server.service.ShipmentDao;
 /**
  * Data access object for saving and retrieving shipment, using JPA
  * 
- * @author Veerapat Threeravipark 5510547022
+ * @author veerapat
  * 
  */
 public class JpaShipmentDao implements ShipmentDao {
