@@ -65,9 +65,11 @@ import org.json.JSONObject;
 import org.json.XML;
 
 /**
+ * ShipmentResource provides RESTful web resources using JAX-RS annotations to
+ * map requests to request handling code, and to inject resources into code.
  * 
  * @author veerapat, suwijak
- *
+ * 
  */
 @Path("/shipments")
 @Singleton
@@ -87,7 +89,8 @@ public class ShipmentResource {
 	private final String CLIENT_SECRET = "wD1SIj5DdJiO5d4qz7FVL0Ko";
 	private final String CLIENT_WEB_PATH = "/access.php";
 	private final String HOST_SERVER = "128.199.177.37";
-	private final String HOST_WEB_ADMIN = "158.108.39.196";
+	//host admin for use web-admin in server.
+	private final String HOST_WEB_ADMIN = "158.108.235.161";
 	private final String WEB_ADMIN_PATH = "/web-admin/index.php";
 	private final String OAUTH_CALLBACK_PATH = "shipments/oauth2callback";
 
@@ -524,8 +527,8 @@ public class ShipmentResource {
 			if (shipment == null) {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
-			if(shipmentDao.delete(id)){
-			
+			if (shipmentDao.delete(id)) {
+
 			}
 			return Response.ok().build();
 
@@ -739,8 +742,10 @@ public class ShipmentResource {
 	 * Check last login of user. if last login is not equal , user need to login
 	 * for new access token.
 	 * 
-	 * @param user user who use this service
-	 * @param req HttpServletRequest for getRemoteAddress
+	 * @param user
+	 *            user who use this service
+	 * @param req
+	 *            HttpServletRequest for getRemoteAddress
 	 * @return return true if host up to date, otherwise false
 	 */
 	public boolean checkLastLogin(User user, HttpServletRequest req) {
