@@ -82,7 +82,6 @@ Shipment tracking system is used for the shipping and the observing of product o
     ```
     GET /shipments/{id}/status
     ```
-    Example : [Demo](http://track-trace.tk:8080/shipments/2/status)
 	* <b>Courier</b>
 
     - <i>Authenticate Required</i>
@@ -112,8 +111,19 @@ Shipment tracking system is used for the shipping and the observing of product o
 * Sequence Diagram (Web client) : [Link](https://docs.google.com/drawings/d/1c0_B0CL5km4ttUjANvumr18zXrdh5E2BGpbB5BKmH_8/edit)
 * Sequence Diagram (Android client) : [Link](https://docs.google.com/drawings/d/1sRsJNigXH5XZT1Ea7S8Hb4E3MnwS15iSESR_5rxGKvY/edit)
 
-## Installation 
-* <i>comming soon</i>
+## How to use this? (for commercial)
+* 1. Add <b>access.php</b> in root path (support only php).<br>
+#####(example : /var/www/  ->  http://localhost/access.php)<br>
+Example access.php : [Link](https://github.com/aunsuwijak/shipment-web) 
+* 2. Save accessToken in to your application (mysql, text, etc).
+* 3. Include header "Authorization" with access token in request.
+* ** <b>You need to get new access token when you change you host remote address</b> 
+(change internet network or computer).
+
+## Issue
+* 1. Jetty Resource OAuth can't work. It cannot get response body from &#60;a&#62;tag <br>
+<b>Suggestion</b> Use framework that can do this (example : Rails)
+
 
 ## Requirements
 
