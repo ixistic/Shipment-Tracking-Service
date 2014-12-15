@@ -112,11 +112,11 @@ Shipment tracking system is used for the shipping and the observing of product o
 * Sequence Diagram (Android client) : [Link](https://docs.google.com/drawings/d/1sRsJNigXH5XZT1Ea7S8Hb4E3MnwS15iSESR_5rxGKvY/edit)
 
 ## How to use this? (for commercial)
-* Add <b>access.php</b> in root path (support only php).<br>
+* <b>Add access.php</b> in root path (support only php).<br>
 (example : /var/www/  ->  http://localhost/access.php)<br>
-Example access.php : [Link](https://github.com/aunsuwijak/shipment-web) 
-* <b>Save</b> accessToken in to your application (mysql, text, etc).
-* Include header <b>"Authorization"</b> with access token in request.
+Example : <b>access.php</b> : [Link](https://github.com/aunsuwijak/shipment-web) 
+* <b>Save accessToken</b> in to your application (mysql, text, etc).
+* Include header <b>"Authorization" with access token</b> in request.
 * ** <b>You need to get new access token when you change you host remote address</b><br> 
 (change internet network or computer).
 
