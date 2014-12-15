@@ -9,6 +9,12 @@ Shipment tracking system is used for the shipping and the observing of product o
 * Web Application
 * OAuth Authentication
 
+## Stakeholder
+* Customer
+  * Reciever 
+  * Courier (Sender)
+* Delivery Person
+
 ## User Story
 *   <b>Customer</b>
     * <b>Reciever</b> : ( Android Application )
