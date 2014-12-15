@@ -113,9 +113,7 @@ Shipment tracking system is used for the shipping and the observing of product o
 
 ## How to use this? (for commercial)
 * Add <b>access.php</b> in root path (support only php).<br>
-
-#####(example : /var/www/  ->  http://localhost/access.php)<br>
-
+(example : /var/www/  ->  http://localhost/access.php)<br>
 Example access.php : [Link](https://github.com/aunsuwijak/shipment-web) 
 * <b>Save</b> accessToken in to your application (mysql, text, etc).
 * Include header <b>"Authorization"</b> with access token in request.
@@ -123,9 +121,9 @@ Example access.php : [Link](https://github.com/aunsuwijak/shipment-web)
 (change internet network or computer).
 
 ## Issue
-* 1. Jetty Resource OAuth can't work. It cannot get response body from &#60;a&#62;tag <br>
+* Jetty Resource OAuth can't work. It cannot get response body from &#60;a&#62;tag <br>
 <b>Suggestion</b> Use framework that can do this (example : Rails).
-* 2. JPA is not a Good Object Mapper which we can implement query by ourself.
+* JPA is not a Good Object Mapper which we can implement query by ourself.
 
 
 ## Requirements
