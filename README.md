@@ -112,17 +112,20 @@ Shipment tracking system is used for the shipping and the observing of product o
 * Sequence Diagram (Android client) : [Link](https://docs.google.com/drawings/d/1sRsJNigXH5XZT1Ea7S8Hb4E3MnwS15iSESR_5rxGKvY/edit)
 
 ## How to use this? (for commercial)
-* 1. Add <b>access.php</b> in root path (support only php).<br>
+* Add <b>access.php</b> in root path (support only php).<br>
+
 #####(example : /var/www/  ->  http://localhost/access.php)<br>
+
 Example access.php : [Link](https://github.com/aunsuwijak/shipment-web) 
-* 2. Save accessToken in to your application (mysql, text, etc).
-* 3. Include header "Authorization" with access token in request.
-* ** <b>You need to get new access token when you change you host remote address</b> 
+* <b>Save</b> accessToken in to your application (mysql, text, etc).
+* Include header <b>"Authorization"</b> with access token in request.
+* ** <b>You need to get new access token when you change you host remote address</b><br> 
 (change internet network or computer).
 
 ## Issue
 * 1. Jetty Resource OAuth can't work. It cannot get response body from &#60;a&#62;tag <br>
-<b>Suggestion</b> Use framework that can do this (example : Rails)
+<b>Suggestion</b> Use framework that can do this (example : Rails).
+* 2. JPA is not a Good Object Mapper which we can implement query by ourself.
 
 
 ## Requirements
