@@ -92,7 +92,7 @@ public class Shipment implements Serializable {
 
 	@XmlElementWrapper(name = "items")
 	@OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<Item> item = new ArrayList<Item>();
+	private List<Item> item;
 
 	public Shipment() {
 
@@ -215,6 +215,8 @@ public class Shipment implements Serializable {
 	}
 
 	public void setItem(List<Item> item) {
+		if(this.item == null)
+			this.item = new ArrayList<Item>();
 		this.item = item;
 	}
 
@@ -223,6 +225,8 @@ public class Shipment implements Serializable {
 	 * @param item item for shipping
 	 */
 	public void addItem(Item item) {
+		if(this.item == null)
+			this.item = new ArrayList<Item>();
 		this.item.add(item);
 		if (item.getShipment() != this) {
 			item.setShipment(this);

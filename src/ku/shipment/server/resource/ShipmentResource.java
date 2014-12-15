@@ -87,7 +87,7 @@ public class ShipmentResource {
 	private final String CLIENT_SECRET = "wD1SIj5DdJiO5d4qz7FVL0Ko";
 	private final String CLIENT_WEB_PATH = "/access.php";
 	private final String HOST_SERVER = "128.199.177.37";
-	private final String HOST_WEB_ADMIN = "158.108.138.32";
+	private final String HOST_WEB_ADMIN = "158.108.39.196";
 	private final String WEB_ADMIN_PATH = "/web-admin/index.php";
 	private final String OAUTH_CALLBACK_PATH = "shipments/oauth2callback";
 
@@ -524,7 +524,9 @@ public class ShipmentResource {
 			if (shipment == null) {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
-			shipmentDao.delete(id);
+			if(shipmentDao.delete(id)){
+			
+			}
 			return Response.ok().build();
 
 		}

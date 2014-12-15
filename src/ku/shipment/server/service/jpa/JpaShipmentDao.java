@@ -52,7 +52,14 @@ public class JpaShipmentDao implements ShipmentDao {
 
 	@Override
 	public Shipment find(long id) {
-		return em.find(Shipment.class, id);
+		// return em.find(Shipment.class, id);
+		Query query = em
+				.createQuery("SELECT c FROM Shipment c WHERE c.id = :id");
+		query.setParameter("id", id);
+		List<Shipment> list = query.getResultList();
+		if (list.size() == 1)
+			return list.get(0);
+		return null;
 	}
 
 	@Override
