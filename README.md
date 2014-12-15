@@ -10,13 +10,13 @@ Shipment tracking system is used for the shipping and the observing of product o
 * OAuth Authentication
 
 ## User Story
-*   Customer
-    * Reciever : ( Android Application )
+*   <b>Customer</b>
+    * <b>Reciever</b> : ( Android Application )
         -  <i>Authenticate Not Required</i>
         ```
           I can check shipment status.
         ```
-    * Courier : ( Android Application )
+    * <b>Courier</b> : ( Android Application )
         - <i>Authenticate Required</i>
         ```
           I can create shipment.
@@ -28,7 +28,7 @@ Shipment tracking system is used for the shipping and the observing of product o
           I can check shipment status.
           I can check the shipment's cost.
         ```
-* Delivery Person : ( Web Application ) 
+* <b>Delivery Person</b> : ( Web Application ) 
     -   <i>Authenticate Required</i>
     ```
       I can edit shipment's status.
