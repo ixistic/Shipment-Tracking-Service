@@ -20,7 +20,7 @@ Shipment tracking system is used for the shipping and the observing of product o
 
 ## Demo
 * Service : http://track-trace.tk:8080/shipments
-* Android : <i>comming soon<i>
+* Android : https://github.com/peterpanhihi/ShipmentAndroid/releases/tag/v1.0
 
 ## Features
 * Online Shipment
