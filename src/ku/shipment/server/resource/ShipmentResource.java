@@ -26,7 +26,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
@@ -88,10 +87,6 @@ public class ShipmentResource {
 	private final String CLIENT_ID = "229216041764-sjdasnqgvom7lcva4fni6nrcpid4fv7u.apps.googleusercontent.com";
 	private final String CLIENT_SECRET = "wD1SIj5DdJiO5d4qz7FVL0Ko";
 	private final String CLIENT_WEB_PATH = "/access.php";
-	private final String HOST_SERVER = "128.199.177.37";
-	//host admin for use web-admin in server.
-	private final String HOST_WEB_ADMIN = "158.108.235.161";
-	private final String WEB_ADMIN_PATH = "/web-admin/index.php";
 	private final String OAUTH_CALLBACK_PATH = "shipments/oauth2callback";
 
 	/**
@@ -223,16 +218,9 @@ public class ShipmentResource {
 
 		URI uri = null;
 		try {
-			// admin
-			if (host.equals(HOST_WEB_ADMIN)) {
-				uri = new URI("http://" + HOST_SERVER + WEB_ADMIN_PATH
+			uri = new URI("http://" + host + CLIENT_WEB_PATH
 						+ "?accessToken=" + token);
-			}
-			// client
-			else {
-				uri = new URI("http://" + host + CLIENT_WEB_PATH
-						+ "?accessToken=" + token);
-			}
+
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
@@ -315,6 +303,7 @@ public class ShipmentResource {
 			@HeaderParam("Accept") String accept,
 			@HeaderParam("Authorization") String accessToken,
 			@Context HttpServletRequest req) {
+		System.out.println(req.getRemoteAddr());
 		if (accessToken == null) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -324,7 +313,7 @@ public class ShipmentResource {
 			GenericEntity<List<Shipment>> ge = null;
 			List<Shipment> shipments = null;
 			// admin user
-			if (user.getType() == user.TYPE_DELIVERY_PERSON) {
+			if (user.getType() == User.TYPE_DELIVERY_PERSON) {
 				shipments = shipmentDao.findAll();
 			}
 			// normal user
@@ -385,7 +374,7 @@ public class ShipmentResource {
 			Shipment shipment = null;
 			shipment = shipmentDao.find(id);
 			// normal user
-			if (!(user.getType() == user.TYPE_DELIVERY_PERSON)) {
+			if (!(user.getType() == User.TYPE_DELIVERY_PERSON)) {
 				if (!shipment.getUser().equals(user)) {
 					return Response.status(Response.Status.UNAUTHORIZED)
 							.build();
@@ -482,7 +471,7 @@ public class ShipmentResource {
 			Shipment shipment = shipmentDao.find(id);
 			shipment.updateStatus(newStatus.getStatus());
 			// normal user
-			if (!(user.getType() == user.TYPE_DELIVERY_PERSON)) {
+			if (!(user.getType() == User.TYPE_DELIVERY_PERSON)) {
 				if (!shipment.getUser().equals(user)) {
 					return Response.status(Response.Status.UNAUTHORIZED)
 							.build();
@@ -518,7 +507,7 @@ public class ShipmentResource {
 		if (user != null && checkLastLogin(user, req)) {
 			Shipment shipment = shipmentDao.find(id);
 			// normal user
-			if (!(user.getType() == user.TYPE_DELIVERY_PERSON)) {
+			if (!(user.getType() == User.TYPE_DELIVERY_PERSON)) {
 				if (!shipment.getUser().equals(user)) {
 					return Response.status(Response.Status.UNAUTHORIZED)
 							.build();
@@ -651,7 +640,6 @@ public class ShipmentResource {
 			jaxbMarshaller.marshal(shipment, sw);
 			return sw.toString();
 		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
@@ -677,7 +665,6 @@ public class ShipmentResource {
 			jaxbMarshaller.marshal(shipments, sw);
 			return sw.toString();
 		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
@@ -700,7 +687,6 @@ public class ShipmentResource {
 					.toString(PRETTY_PRINT_INDENT_FACTOR);
 			return jsonPrettyPrintString;
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
@@ -749,6 +735,8 @@ public class ShipmentResource {
 	 * @return return true if host up to date, otherwise false
 	 */
 	public boolean checkLastLogin(User user, HttpServletRequest req) {
+		if(user.getType() == User.TYPE_DELIVERY_PERSON)
+			return true;
 		return user.getLast_login().equals(req.getRemoteAddr());
 	}
 

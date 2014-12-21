@@ -1,12 +1,9 @@
 package ku.shipment.server.entity;
 
 import java.io.Serializable;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -24,7 +21,6 @@ import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -44,10 +40,10 @@ import org.eclipse.persistence.oxm.annotations.XmlInverseReference;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlSeeAlso(Item.class)
 public class Shipment implements Serializable {
-	public static final String STATUS_CREATED = "created";
-	public static final String STATUS_PACKED = "packed";
-	public static final String STATUS_SENDING = "sending";
-	public static final String STATUS_RECEIVED = "received";
+	public static final String STATUS_CREATED = "Create";
+	public static final String STATUS_PACKED = "Picked Up";
+	public static final String STATUS_SENDING = "In Transit";
+	public static final String STATUS_RECEIVED = "Received";
 	public static final String TYPE_EMS = "EMS";
 	private static final long serialVersionUID = 3645343276027601559L;
 	@Id
@@ -251,12 +247,23 @@ public class Shipment implements Serializable {
 	 * @return cost for shipping
 	 */
 	public float calCostByFreightRates(float weight) {
+		float cost = 0;
 		if (getType().equals(TYPE_EMS)) {
-			return (weight / 20 * 8) + 20;
+			
+			cost = (weight / 20 * 8) + 20;
 
 		} else {
-			return (weight / 20 * 8) + 4;
+			cost = (weight / 20 * 8) + 4;
 		}
+		float remain = (float) (cost % Math.floor(cost));
+
+		if (remain == 0) {}
+		else if ( remain <= 0.25 && remain > 0 ) cost -= remain - 0.25;
+		else if ( remain <= 0.50 ) cost -= remain - 0.5;
+		else if ( remain <= 0.75 ) cost -= remain - 0.75;
+
+		String s = String.format("%.2f", cost);
+		return Float.parseFloat(s);
 	}
 
 	/**
