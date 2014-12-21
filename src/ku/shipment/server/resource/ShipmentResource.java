@@ -432,6 +432,8 @@ public class ShipmentResource {
 		status.setStatus_packed_time(shipment.getStatus_packed_time());
 		status.setStatus_sending_time(shipment.getStatus_sending_time());
 		status.setStatus_received_time(shipment.getStatus_received_time());
+		status.setTotal_cost(shipment.getTotal_cost());
+		status.setTotal_weight(shipment.getTotal_weight());
 		// json
 		if (accept.equals(MediaType.APPLICATION_JSON)) {
 			String response = convertXMLtoJSON(mashallXml(status));
